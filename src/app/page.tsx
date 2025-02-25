@@ -1,5 +1,10 @@
-import DashboardFeature from '@/components/dashboard/dashboard-feature'
+import { GachaCreate, GachaExplain } from '@/components/gacha/gacha-ui'
 
 export default function Page() {
-  return <DashboardFeature />
+  return (
+    <div>
+      <GachaExplain />
+      <GachaCreate />
+    </div>
+  )
 }
