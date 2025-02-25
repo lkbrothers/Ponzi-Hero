@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@coral-xyz/anchor": "0.30.1",
+    "@metaplex-foundation/mpl-token-metadata": "^3.4.0",
     "@solana/spl-token": "0.4.9",
     "@solana/wallet-adapter-base": "0.9.23",
     "@solana/wallet-adapter-react": "0.15.35",
@@ -47,11 +48,16 @@
     "rename": {
       "counter": {
         "to": "{{name}}",
-        "paths": ["anchor", "src"]
+        "paths": [
+          "anchor",
+          "src"
+        ]
       },
       "scaffold": {
         "to": "{{name}}",
-        "paths": ["src"]
+        "paths": [
+          "src"
+        ]
       }
     },
     "instructions": [
