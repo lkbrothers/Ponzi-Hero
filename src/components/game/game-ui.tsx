@@ -5,43 +5,39 @@ import { useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 import { ellipsify } from '../ui/ui-layout'
 import { ExplorerLink } from '../cluster/cluster-ui'
-import {
-    useGameProgram,
-    useGameProgramAccount,
-} from './game-data-access'
+import { useGameProgram, useGameProgramAccount } from './game-data-access'
 
 /* 
-  GameInit 컴포넌트
-  - "Account Init" 버튼을 누르면 userInitialize 실행
+  Account 초기화 버튼
+  - "Account Init" 버튼을 누르면 userInitialize 실행하여 dbAccount가 생성됨
 */
-export function GameInit({
-    userPublicKey,
-}: {
-    userPublicKey: PublicKey,
-}) {
+export function GameInit({ userPublicKey }: { userPublicKey: PublicKey }) {
     const { userInitialize } = useGameProgram()
+    const [isClicked, setIsClicked] = useState(false)
+
+    const handleClick = async () => {
+        setIsClicked(true); // 버튼 클릭 시 비활성화
+        await userInitialize.mutateAsync(userPublicKey);
+    };
 
     return (
         <button
             className="btn btn-primary"
-            onClick={() => userInitialize.mutateAsync(userPublicKey)}
-            disabled={userInitialize.isPending}
+            onClick={handleClick}
+            disabled={isClicked || userInitialize.isPending} // 클릭했거나 실행 중이면 비활성화
         >
-            {userInitialize.isPending ? "Initializing..." : "Account Init"}
+            {userInitialize.isPending ? "Initializing..." : "Create"}
         </button>
     )
 }
 
 /* 
   GameList 컴포넌트
-  - 생성된 DB 계정 카드들을 렌더링
-  - 여기서는 각 카드에 대해 GameCardDbAccountChain 컴포넌트를 사용
+  - 단 하나의 dbAccount가 존재한다고 가정하고,
+    dbAccount 정보는 Account Init 버튼 바로 아래에 간단하게 표시함.
+  - Game Start 버튼을 눌러 생성되는 code_account는 카드 형식으로 나열함.
 */
-export function GameList({
-    userPublicKey,
-}: {
-    userPublicKey: PublicKey,
-}) {
+export function GameList({ userPublicKey }: { userPublicKey: PublicKey }) {
     const { DbAccounts, getProgramAccount, CodeAccounts } = useGameProgram()
 
     if (getProgramAccount.isLoading) {
@@ -50,31 +46,27 @@ export function GameList({
     if (!getProgramAccount.data?.value) {
         return (
             <div className="alert alert-info flex justify-center">
-                <span>
-                    Program account not found. Make sure you have deployed the program and are on the correct cluster.
-                </span>
+                <span>Program account not found. Make sure you have deployed the program and are on the correct cluster.</span>
             </div>
         )
     }
 
+    if (DbAccounts.isLoading) {
+        return <span className="loading loading-spinner loading-lg"></span>
+    }
+
+    const dbAccount = DbAccounts.data && DbAccounts.data.length
+        ? DbAccounts.data[0].publicKey
+        : null
+
     return (
         <div className="space-y-6">
-            {DbAccounts.isLoading ? (
-                <span className="loading loading-spinner loading-lg"></span>
-            ) : DbAccounts.data?.length ? (
-                <div className="grid md:grid-cols-2 gap-4">
-                    {DbAccounts.data.map((dbAccount) => (
-                        <GameCardDbAccountChain
-                            key={dbAccount.publicKey.toString()}
-                            userPublicKey={userPublicKey}
-                            dbAccount={dbAccount.publicKey}
-                        />
-                    ))}
-                </div>
+            {dbAccount ? (
+                <GameDashboard userPublicKey={userPublicKey} dbAccount={dbAccount} />
             ) : (
                 <div className="text-center">
                     <h2 className="text-2xl">No DB accounts</h2>
-                    No DB accounts found. Create one above to get started.
+                    <p>No DB accounts found. Create one above to get started.</p>
                 </div>
             )}
         </div>
@@ -91,13 +83,7 @@ export function GameList({
       2. finalizeGameMutation 실행 (remitTxHash, blockNonce, blockHash 전달) → 최종 game 실행, 반환 signature
       3. 해당 signature를 dbCodeInMutation의 tailTx 파라미터로 전달하여 db_code_in 실행
 */
-function GameCardDbAccountChain({
-    userPublicKey,
-    dbAccount,
-}: {
-    userPublicKey: PublicKey,
-    dbAccount: PublicKey,
-}) {
+function GameDashboard({ userPublicKey, dbAccount }: { userPublicKey: PublicKey, dbAccount: PublicKey }) {
     const {
         dbAccountQuery,
         remitForRandomMutation,
@@ -106,7 +92,7 @@ function GameCardDbAccountChain({
         fetchCodeChain,
     } = useGameProgramAccount({ userPublicKey, dbAccount })
 
-    const { fetchBlockInfo, CodeAccounts, DbAccounts } = useGameProgram()
+    const { fetchBlockInfo } = useGameProgram()
 
     // 최신 코드 계정의 키(문자열)를 저장 (dbAccount.tailTx를 사용)
     const handleText = useMemo(() => dbAccountQuery.data?.handle ?? '', [dbAccountQuery.data?.handle])
@@ -155,34 +141,65 @@ function GameCardDbAccountChain({
     }
 
     return (
-        <div className="card p-4 shadow-lg">
-            <h3 className="text-xl font-bold">Game Account</h3>
-            <p>DB Account TailTx: {recentTailTx}</p>
-            <CodeChainCard codeChain={codeChain} />
-            <button className="btn btn-primary mt-4" onClick={handleRemitAndFinalize}>
-                Remit & Finalize Game
-            </button>
+        <div className="space-y-6">
+            
+            <div className="text-center">
+                <h3 className="text-xl font-bold">DB Account Info</h3>
+                <p><strong>Handle:</strong> {handleText}</p>
+                <p><strong>TailTx:</strong> {recentTailTx}</p>
+            </div>
+            
+            <div className="text-center">
+                <button className="btn btn-primary" onClick={handleRemitAndFinalize}>
+                    Game Start
+                </button>
+            </div>
+            
+            <div className="grid md:grid-cols-2 gap-4">
+                {codeChain.length > 0 ? (
+                    codeChain.map((entry, idx) => (
+                        <CodeAccountCard key={idx} entry={entry} idx={idx} />
+                    ))
+                ) : (
+                    <p className="col-span-full text-center">No code accounts found.</p>
+                )}
+            </div>
         </div>
-    );
+    )
 }
 
-function CodeChainCard({ codeChain }: { codeChain: { txHash: string; before_tx: string; code: string }[] }) {
+/* 
+  CodeAccountCard 컴포넌트
+  - 개별 code_account의 정보를 카드 형태로 렌더링
+  - TxHash와 BeforeTx의 첫 20자는 첫 줄에, 나머지 부분은 다음 줄에 표시
+*/
+function CodeAccountCard({ entry, idx }: { entry: { txHash: string; before_tx: string; code: string }, idx: number }) {
+    const splitText = (text: string, limit: number) => {
+        if (text.length <= limit) return [text]
+        return [text.slice(0, limit), text.slice(limit)]
+    }
+
+    const [txFirst, txRest] = splitText(entry.txHash, 20)
+    const [beforeFirst, beforeRest] = splitText(entry.before_tx, 20)
+
     return (
-        <div className="mt-4 p-4 border rounded-lg shadow-md">
-            <h4 className="font-semibold">Transaction Chain</h4>
-            {codeChain.length ? (
-                <ul>
-                    {codeChain.map((entry, idx) => (
-                        <li key={idx} className="mt-2">
-                            <strong>{idx + 1}.</strong> TxHash: {entry.txHash}<br />
-                            Code: {entry.code}<br />
-                            Before Tx: {entry.before_tx}
-                        </li>
-                    ))}7
-                </ul>
-            ) : (
-                <p>No transaction chain info found.</p>
-            )}
+        <div className="card p-4 shadow-2xl">
+            <h4 className="text-lg font-bold">Code Account {idx + 1}</h4>
+            <p>
+                <strong>TxHash:</strong>{" "}
+                <span title={entry.txHash}>
+                    {txFirst}
+                    {txRest && (<><br />{txRest}</>)}
+                </span>
+            </p>
+            <p><strong>Code:</strong> {entry.code}</p>
+            <p>
+                <strong>Before Tx:</strong>{" "}
+                <span title={entry.before_tx}>
+                    {beforeFirst}
+                    {beforeRest && (<><br />{beforeRest}</>)}
+                </span>
+            </p>
         </div>
     )
 }
