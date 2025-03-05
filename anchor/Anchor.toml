@@ -8,6 +8,7 @@ skip-lint = false
 [programs.localnet]
 counter = "coUnmi3oBUtwtd9fjeAvSsJssXh5A5xyPbhpewyzRVF"
 credit = "H1kXTuAJntnCELS2phbS7bMcD4VYy5CQK3wKFC9BMgfL"
+nft = "3BjKmutGGbVtnVeeJnNg9xKqkAticq7WYvBjuBr1dQab"
 
 [registry]
 url = "https://api.apr.dev"
