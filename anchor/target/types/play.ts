@@ -1,14 +1,20 @@
-{
-  "address": "3QfKEYFr6fgT1oc2wjptWMQoB6Qf96PPKqzutPQqUrz2",
+/**
+ * Program IDL in camelCase format in order to be used in JS/TS.
+ *
+ * Note that this is only a type helper and is not the actual IDL. The original
+ * IDL can be found at `target/idl/play.json`.
+ */
+export type Play = {
+  "address": "9nb1AEZzVaC1VvoQAUoDJTuZK3x2uZDQ2cZd3tuAQwzC",
   "metadata": {
-    "name": "game",
+    "name": "play",
     "version": "0.1.0",
     "spec": "0.1.0",
     "description": "Created with Anchor"
   },
   "instructions": [
     {
-      "name": "db_code_in",
+      "name": "dbCodeIn",
       "discriminator": [
         38,
         100,
@@ -26,23 +32,23 @@
           "signer": true
         },
         {
-          "name": "db_account",
+          "name": "dbAccount",
           "writable": true
         },
         {
-          "name": "system_program",
+          "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "code_tx_hash",
+          "name": "codeTxHash",
           "type": "string"
         }
       ]
     },
     {
-      "name": "finalize_game",
+      "name": "finalizeGame",
       "discriminator": [
         203,
         227,
@@ -60,11 +66,11 @@
           "signer": true
         },
         {
-          "name": "db_account",
+          "name": "dbAccount",
           "writable": true
         },
         {
-          "name": "code_account",
+          "name": "codeAccount",
           "writable": true,
           "pda": {
             "seeds": [
@@ -88,23 +94,23 @@
               {
                 "kind": "account",
                 "path": "db_account.counter",
-                "account": "DBaccount"
+                "account": "dBaccount"
               }
             ]
           }
         },
         {
-          "name": "system_program",
+          "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "remit_tx_hash",
+          "name": "remitTxHash",
           "type": "string"
         },
         {
-          "name": "block_hash",
+          "name": "blockHash",
           "type": "string"
         },
         {
@@ -112,13 +118,13 @@
           "type": "u64"
         },
         {
-          "name": "block_time",
+          "name": "blockTime",
           "type": "u64"
         }
       ]
     },
     {
-      "name": "remit_for_random",
+      "name": "remitForRandom",
       "discriminator": [
         238,
         111,
@@ -136,18 +142,18 @@
           "signer": true
         },
         {
-          "name": "db_account",
+          "name": "dbAccount",
           "writable": true
         },
         {
-          "name": "system_program",
+          "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": []
     },
     {
-      "name": "user_initialize",
+      "name": "userInitialize",
       "discriminator": [
         223,
         157,
@@ -165,7 +171,7 @@
           "signer": true
         },
         {
-          "name": "db_account",
+          "name": "dbAccount",
           "writable": true,
           "pda": {
             "seeds": [
@@ -192,7 +198,7 @@
           }
         },
         {
-          "name": "system_program",
+          "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         }
       ],
@@ -201,7 +207,7 @@
   ],
   "accounts": [
     {
-      "name": "CodeAccount",
+      "name": "codeAccount",
       "discriminator": [
         65,
         67,
@@ -214,7 +220,7 @@
       ]
     },
     {
-      "name": "DBaccount",
+      "name": "dBaccount",
       "discriminator": [
         207,
         58,
@@ -230,48 +236,48 @@
   "errors": [
     {
       "code": 6000,
-      "name": "InsufficientFunds",
+      "name": "insufficientFunds",
       "msg": "Insufficient funds to send code."
     },
     {
       "code": 6001,
-      "name": "InvalidWallet",
+      "name": "invalidWallet",
       "msg": "Invalid wallet address."
     },
     {
       "code": 6002,
-      "name": "InvalidReceiver",
+      "name": "invalidReceiver",
       "msg": "Invalid receiver address."
     },
     {
       "code": 6003,
-      "name": "FundsNotReceived",
+      "name": "fundsNotReceived",
       "msg": "Funds were not received by the expected wallet."
     },
     {
       "code": 6004,
-      "name": "InvalidAccount",
+      "name": "invalidAccount",
       "msg": "Provided code account is invalid."
     },
     {
       "code": 6005,
-      "name": "InvalidCodeFormat",
-      "msg": "InvalidCodeFormat"
+      "name": "invalidCodeFormat",
+      "msg": "invalidCodeFormat"
     },
     {
       "code": 6006,
-      "name": "InvalidInstructionData",
-      "msg": "InvalidInstructionData"
+      "name": "invalidInstructionData",
+      "msg": "invalidInstructionData"
     },
     {
       "code": 6007,
-      "name": "InvalidTransfer",
-      "msg": "InvalidTransfer"
+      "name": "invalidTransfer",
+      "msg": "invalidTransfer"
     }
   ],
   "types": [
     {
-      "name": "CodeAccount",
+      "name": "codeAccount",
       "type": {
         "kind": "struct",
         "fields": [
@@ -284,14 +290,14 @@
             "type": "string"
           },
           {
-            "name": "before_tx",
+            "name": "beforeTx",
             "type": "string"
           }
         ]
       }
     },
     {
-      "name": "DBaccount",
+      "name": "dBaccount",
       "type": {
         "kind": "struct",
         "fields": [
@@ -304,7 +310,7 @@
             "type": "string"
           },
           {
-            "name": "tail_tx",
+            "name": "tailTx",
             "type": "string"
           },
           {
@@ -315,4 +321,4 @@
       }
     }
   ]
-}
+};

@@ -6,7 +6,9 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-counter = "CoatTNmx2psjiC1yq34435qDtbHCLBLcdReJTLqAqrxL"
+counter = "G8UJpQknzHjWAy3tRhrFCXqYXeZ35VHdL3cj86RfGEEj"
+game = "3QfKEYFr6fgT1oc2wjptWMQoB6Qf96PPKqzutPQqUrz2"
+play = "9nb1AEZzVaC1VvoQAUoDJTuZK3x2uZDQ2cZd3tuAQwzC"
 
 [registry]
 url = "https://api.apr.dev"

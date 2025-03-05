@@ -4,10 +4,10 @@ use anchor_lang::prelude::*;
 use anchor_lang::system_program;
 use anchor_lang::solana_program::hash::{hash, Hash};
 
-declare_id!("3QfKEYFr6fgT1oc2wjptWMQoB6Qf96PPKqzutPQqUrz2");
+declare_id!("9nb1AEZzVaC1VvoQAUoDJTuZK3x2uZDQ2cZd3tuAQwzC");
 
 #[program]
-pub mod game {
+pub mod play {
     use super::*;
 
     pub fn user_initialize(ctx: Context<UserInitialize>) -> Result<()> {

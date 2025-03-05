@@ -2,3 +2,4 @@
 
 export * from './counter-exports'
 export * from './game-exports'
+export * from './play-exports'

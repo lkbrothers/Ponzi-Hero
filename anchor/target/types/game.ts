@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/game.json`.
  */
 export type Game = {
-  "address": "CoatTNmx2psjiC1yq34435qDtbHCLBLcdReJTLqAqrxL",
+  "address": "3QfKEYFr6fgT1oc2wjptWMQoB6Qf96PPKqzutPQqUrz2",
   "metadata": {
     "name": "game",
     "version": "0.1.0",
