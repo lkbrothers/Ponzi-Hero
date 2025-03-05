@@ -1,70 +1,216 @@
 #![allow(clippy::result_large_err)]
 
 use anchor_lang::prelude::*;
+use anchor_lang::system_program;
+use anchor_lang::solana_program::hash::{hash, Hash};
 
-declare_id!("coUnmi3oBUtwtd9fjeAvSsJssXh5A5xyPbhpewyzRVF");
+declare_id!("CoatTNmx2psjiC1yq34435qDtbHCLBLcdReJTLqAqrxL");
 
 #[program]
-pub mod counter {
+pub mod game {
     use super::*;
 
-  pub fn close(_ctx: Context<CloseCounter>) -> Result<()> {
-    Ok(())
-  }
+    pub fn user_initialize(ctx: Context<UserInitialize>) -> Result<()> {
+        let (_expected_db_pda, expected_db_bump) = Pubkey::find_program_address(
+            &[b"dbseedhere", ctx.accounts.user.key.as_ref()],
+            ctx.program_id,
+        );
 
-  pub fn decrement(ctx: Context<Update>) -> Result<()> {
-    ctx.accounts.counter.count = ctx.accounts.counter.count.checked_sub(1).unwrap();
-    Ok(())
-  }
+        let db_account = &mut ctx.accounts.db_account;
+        db_account.bump = expected_db_bump;
+        db_account.handle = String::new();
+        // 체인의 최초 종료값을 "GENESIS"로 설정합니다.
+        db_account.tail_tx = "GENESIS".to_string();
+        db_account.counter = 0;
 
-  pub fn increment(ctx: Context<Update>) -> Result<()> {
-    ctx.accounts.counter.count = ctx.accounts.counter.count.checked_add(1).unwrap();
-    Ok(())
-  }
+        Ok(())
+    }
 
-  pub fn initialize(_ctx: Context<InitializeCounter>) -> Result<()> {
-    Ok(())
-  }
+    // user wallet -> db_account
+    pub fn remit_for_random(
+        ctx: Context<RemitForRandom>,
+    ) -> Result<()> {
+        let required_lamports = 3_000_000; // 0.0003 SOL
 
-  pub fn set(ctx: Context<Update>, value: u8) -> Result<()> {
-    ctx.accounts.counter.count = value.clone();
-    Ok(())
-  }
+        let (expected_pda, _expected_bump) = Pubkey::find_program_address(
+            &[b"dbseedhere", ctx.accounts.user.key.as_ref()],
+            ctx.program_id,
+        );
+        if ctx.accounts.db_account.key() != expected_pda {
+            return Err(ErrorCode::InvalidAccount.into());
+        }
+
+        // 송금 계좌(사용자 지갑)의 잔액 확인
+        let user_account_info = ctx.accounts.user.to_account_info();
+        if user_account_info.lamports() < required_lamports {
+            return Err(ErrorCode::InsufficientFunds.into());
+        }
+
+        let cpi_accounts = system_program::Transfer {
+            from: ctx.accounts.user.to_account_info(),
+            to: ctx.accounts.db_account.to_account_info(),
+        };
+        let cpi_program = ctx.accounts.system_program.to_account_info();
+        let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
+        system_program::transfer(cpi_ctx, required_lamports)?;
+
+        Ok(())
+    }
+
+    // finalize_game에서는 매 호출 시마다 새로운 code_account(새로운 노드)를 생성합니다.
+    pub fn finalize_game(
+        ctx: Context<FinalizeGame>,
+        remit_tx_hash: String,
+        block_hash: String,
+    ) -> Result<()> {
+        // db_account.counter 값을 seed로 사용하여 고유한 PDA를 생성합니다.
+        let counter_bytes = ctx.accounts.db_account.counter.to_le_bytes();
+        let (expected_pda, bump) = Pubkey::find_program_address(
+            &[b"seedhere", ctx.accounts.user.key.as_ref(), &counter_bytes],
+            ctx.program_id,
+        );
+        if ctx.accounts.code_account.key() != expected_pda {
+            return Err(ErrorCode::InvalidAccount.into());
+        }
+
+        // 랜덤 결과 계산
+        let combined = format!("{}{}", remit_tx_hash, block_hash);
+        let hash_result: Hash = hash(combined.as_bytes());
+        let bytes = hash_result.to_bytes();
+        let mut num: u64 = 0;
+        for i in 0..8 {
+            num = (num << 8) | (bytes[i] as u64);
+        }
+        let random_value = num as f64 / u64::MAX as f64;
+        let item = if random_value < 0.5 { "lose" } else { "win" };
+
+        // 새 code_account(노드)를 초기화합니다.
+        let code_account = &mut ctx.accounts.code_account;
+        code_account.bump = bump;
+        code_account.code = item.to_string();
+        // 이전 노드(혹은 초기값 "GENESIS")를 before_tx에 저장합니다.
+        code_account.before_tx = ctx.accounts.db_account.tail_tx.clone();
+
+        Ok(())
+    }
+
+    // db_account -> user wallet
+    pub fn db_code_in(ctx: Context<DbCodeIn>, code_tx_hash: String) -> Result<()> {
+        let required_lamports = 3_000_000;
+
+        let (expected_db_pda, _expected_db_bump) = Pubkey::find_program_address(
+            &[b"dbseedhere", ctx.accounts.user.key.as_ref()],
+            ctx.program_id,
+        );
+        
+        if ctx.accounts.db_account.key() != expected_db_pda {
+            return Err(ErrorCode::InvalidAccount.into());
+        }
+
+        let receiver_account = ctx.accounts.user.to_account_info();
+        let db_pda_account_info = &ctx.accounts.db_account.to_account_info();
+
+        let pda_balance = db_pda_account_info.lamports();
+        if pda_balance < required_lamports {
+            return Err(ErrorCode::InvalidTransfer.into());
+        }
+
+        if **db_pda_account_info.try_borrow_lamports()? < required_lamports {
+            return Err(ErrorCode::InsufficientFunds.into());
+        }
+
+        **db_pda_account_info.try_borrow_mut_lamports()? -= required_lamports;
+        **receiver_account.try_borrow_mut_lamports()? += required_lamports;
+
+        ctx.accounts.db_account.tail_tx = code_tx_hash.clone();
+        ctx.accounts.db_account.counter += 1;
+
+        Ok(())
+    }
 }
-
-#[derive(Accounts)]
-pub struct InitializeCounter<'info> {
-  #[account(mut)]
-  pub payer: Signer<'info>,
-
-  #[account(
-  init,
-  space = 8 + Counter::INIT_SPACE,
-  payer = payer
-  )]
-  pub counter: Account<'info, Counter>,
-  pub system_program: Program<'info, System>,
-}
-#[derive(Accounts)]
-pub struct CloseCounter<'info> {
-  #[account(mut)]
-  pub payer: Signer<'info>,
-
-  #[account(
-  mut,
-  close = payer, // close account and return lamports to payer
-  )]
-  pub counter: Account<'info, Counter>,
-}
-
-#[derive(Accounts)]
-pub struct Update<'info> {
-  #[account(mut)]
-  pub counter: Account<'info, Counter>,
+#[account]
+pub struct DBaccount {
+    pub bump: u8,
+    pub handle: String,
+    pub tail_tx: String,
+    pub counter: u64, // 새로운 code_account 생성을 위한 카운터
 }
 
 #[account]
-#[derive(InitSpace)]
-pub struct Counter {
-  count: u8,
+pub struct CodeAccount {
+    pub bump: u8,
+    pub code: String,
+    pub before_tx: String,
+}
+
+#[derive(Accounts)]
+pub struct UserInitialize<'info> {
+    #[account(mut)]
+    pub user: Signer<'info>,
+    #[account(
+        init,
+        payer = user,
+        seeds = [b"dbseedhere", user.key().as_ref()],
+        bump,
+        space = 8 + 1 + 50 + 8 + 100
+    )]
+    pub db_account: Account<'info, DBaccount>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct RemitForRandom<'info> {
+    #[account(mut)]
+    pub user: Signer<'info>,
+    #[account(mut)]
+    pub db_account: Account<'info, DBaccount>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct DbCodeIn<'info> {
+    #[account(mut)]
+    pub user: Signer<'info>,
+    #[account(mut)]
+    pub db_account: Account<'info, DBaccount>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct FinalizeGame<'info> {
+    #[account(mut)]
+    pub user: Signer<'info>,
+    #[account(mut)]
+    pub db_account: Account<'info, DBaccount>,
+    // 매 finalize_game 호출 시 새로운 code_account를 생성합니다.
+    #[account(
+        init,
+        payer = user,
+        space = 1 + 1 + 900 + 100,
+        seeds = [b"seedhere", user.key().as_ref(), db_account.counter.to_le_bytes().as_ref()],
+        bump,
+    )]
+    pub code_account: Account<'info, CodeAccount>,
+    pub system_program: Program<'info, System>,
+}
+
+// 에러 코드 정의
+#[error_code]
+pub enum ErrorCode {
+    #[msg("Insufficient funds to send code.")]
+    InsufficientFunds,
+    #[msg("Invalid wallet address.")]
+    InvalidWallet,
+    #[msg("Invalid receiver address.")]
+    InvalidReceiver,
+    #[msg("Funds were not received by the expected wallet.")]
+    FundsNotReceived,
+    #[msg("Provided code account is invalid.")]
+    InvalidAccount,
+    #[msg("InvalidCodeFormat")]
+    InvalidCodeFormat,
+    #[msg("InvalidInstructionData")]
+    InvalidInstructionData,
+    #[msg("InvalidTransfer")]
+    InvalidTransfer,
 }
