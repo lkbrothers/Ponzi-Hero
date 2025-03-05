@@ -9,6 +9,7 @@ import toast from 'react-hot-toast'
 import { useCluster } from '../cluster/cluster-data-access'
 import { useAnchorProvider } from '../solana/solana-provider'
 import { useTransactionToast } from '../ui/ui-layout'
+import BN from 'bn.js'
 
 export function useGameProgram() {
     const { connection } = useConnection()
@@ -50,13 +51,15 @@ export function useGameProgram() {
     // fetchBlockInfo: remit 트랜잭션 해시를 받아 블록 정보를 조회
     const fetchBlockInfo = async (
         remitTxHash: string
-    ): Promise<{ blockHash: string }> => {
+    ): Promise<{ blockHash: string, slot: number, blockTime: number | null }> => {
         const txResponse = await connection.getParsedTransaction(remitTxHash, { commitment: 'confirmed' });
         if (!txResponse) {
             throw new Error('Transaction not found');
         }
         const blockHash = txResponse.transaction.message.recentBlockhash;
-        return { blockHash };
+        const slot = txResponse.slot;
+        const blockTime = txResponse.blockTime ?? null;
+        return { blockHash, slot, blockTime };
     }
 
     return {
@@ -81,7 +84,7 @@ export function useGameProgramAccount({
 
     const { cluster } = useCluster()
     const transactionToast = useTransactionToast()
-    const { program, programId, DbAccounts, connection } = useGameProgram()
+    const { program, connection } = useGameProgram()
 
     const dbAccountQuery = useQuery({
         queryKey: ['game', 'fetch', { cluster, dbAccount }],
@@ -127,12 +130,16 @@ export function useGameProgramAccount({
         mutationFn: ({
             remitTxHash,
             blockHash,
+            slot,
+            blockTime,
         }: {
             remitTxHash: string,
             blockHash: string,
+            slot: number,
+            blockTime: number,
         }) => {
             return program.methods
-                .finalizeGame(remitTxHash, blockHash)
+                .finalizeGame(remitTxHash, blockHash, new BN(slot), new BN(blockTime))
                 .accounts({
                     user: userPublicKey,
                     dbAccount: dbAccount,
@@ -149,8 +156,8 @@ export function useGameProgramAccount({
     const fetchCodeChain = useCallback(
         async (
             currentTxHash: string,
-            chain: { txHash: string, before_tx: string, code: string }[] = []
-        ): Promise<{ txHash: string, before_tx: string, code: string }[]> => {
+            chain: { txHash: string, before_tx: string, nft: string }[] = []
+        ): Promise<{ txHash: string, before_tx: string, nft: string }[]> => {
             // 1. 기저 조건
             if (currentTxHash === "GENESIS") return chain;
             try {
@@ -200,7 +207,7 @@ export function useGameProgramAccount({
                 const entry = {
                     txHash: currentTxHash,
                     before_tx: decoded.beforeTx,
-                    code: decoded.code,
+                    nft: decoded.nft,
                 };
                 chain.push(entry);
 

@@ -95,11 +95,11 @@ function GameDashboard({ userPublicKey, dbAccount }: { userPublicKey: PublicKey,
     const { fetchBlockInfo } = useGameProgram()
 
     // 최신 코드 계정의 키(문자열)를 저장 (dbAccount.tailTx를 사용)
-    const handleText = useMemo(() => dbAccountQuery.data?.handle ?? '', [dbAccountQuery.data?.handle])
+    const nickname = useMemo(() => dbAccountQuery.data?.nickname ?? '', [dbAccountQuery.data?.nickname])
     const recentTailTx = useMemo(() => dbAccountQuery.data?.tailTx ?? '', [dbAccountQuery.data?.tailTx])
 
     // codeChain을 상태로 관리
-    const [codeChain, setCodeChain] = useState<{ txHash: string; before_tx: string; code: string }[]>([])
+    const [codeChain, setCodeChain] = useState<{ txHash: string; before_tx: string; nft: string }[]>([])
 
     // 컴포넌트 진입 시 tailTx를 기반으로 codeChain을 조회
     useEffect(() => {
@@ -118,12 +118,14 @@ function GameDashboard({ userPublicKey, dbAccount }: { userPublicKey: PublicKey,
             toast.success(`Remit successful: ${remitTxHash}`)
 
             // 2. game-data-access의 fetchBlockInfo 함수를 사용해 블록 정보를 조회
-            const { blockHash } = await fetchBlockInfo(remitTxHash)
+            const { blockHash, slot, blockTime } = await fetchBlockInfo(remitTxHash)
 
             // 3. finalizeGame 실행: remitTxHash, blockHash 전달
             const finalizeSignature = await finalizeGameMutation.mutateAsync({
                 remitTxHash,
                 blockHash,
+                slot,
+                blockTime: blockTime ?? 0,
             })
             toast.success(`Finalize Game successful: ${finalizeSignature}`)
 
@@ -145,7 +147,7 @@ function GameDashboard({ userPublicKey, dbAccount }: { userPublicKey: PublicKey,
             
             <div className="text-center">
                 <h3 className="text-xl font-bold">DB Account Info</h3>
-                <p><strong>Handle:</strong> {handleText}</p>
+                <p><strong>Nickname:</strong> {nickname}</p>
                 <p><strong>TailTx:</strong> {recentTailTx}</p>
             </div>
             
@@ -173,7 +175,7 @@ function GameDashboard({ userPublicKey, dbAccount }: { userPublicKey: PublicKey,
   - 개별 code_account의 정보를 카드 형태로 렌더링
   - TxHash와 BeforeTx의 첫 20자는 첫 줄에, 나머지 부분은 다음 줄에 표시
 */
-function CodeAccountCard({ entry, idx }: { entry: { txHash: string; before_tx: string; code: string }, idx: number }) {
+function CodeAccountCard({ entry, idx }: { entry: { txHash: string; before_tx: string; nft: string }, idx: number }) {
     const splitText = (text: string, limit: number) => {
         if (text.length <= limit) return [text]
         return [text.slice(0, limit), text.slice(limit)]
@@ -192,7 +194,7 @@ function CodeAccountCard({ entry, idx }: { entry: { txHash: string; before_tx: s
                     {txRest && (<><br />{txRest}</>)}
                 </span>
             </p>
-            <p><strong>Code:</strong> {entry.code}</p>
+            <p><strong>NFT:</strong> {entry.nft}</p>
             <p>
                 <strong>Before Tx:</strong>{" "}
                 <span title={entry.before_tx}>

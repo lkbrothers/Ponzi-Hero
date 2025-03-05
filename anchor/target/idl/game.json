@@ -106,6 +106,14 @@
         {
           "name": "block_hash",
           "type": "string"
+        },
+        {
+          "name": "slot",
+          "type": "u64"
+        },
+        {
+          "name": "block_time",
+          "type": "u64"
         }
       ]
     },
@@ -272,7 +280,7 @@
             "type": "u8"
           },
           {
-            "name": "code",
+            "name": "nft",
             "type": "string"
           },
           {
@@ -292,7 +300,7 @@
             "type": "u8"
           },
           {
-            "name": "handle",
+            "name": "nickname",
             "type": "string"
           },
           {

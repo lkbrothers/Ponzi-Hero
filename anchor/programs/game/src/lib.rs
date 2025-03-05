@@ -18,7 +18,7 @@ pub mod game {
 
         let db_account = &mut ctx.accounts.db_account;
         db_account.bump = expected_db_bump;
-        db_account.handle = String::new();
+        db_account.nickname = String::new();
         // 체인의 최초 종료값을 "GENESIS"로 설정합니다.
         db_account.tail_tx = "GENESIS".to_string();
         db_account.counter = 0;
@@ -27,9 +27,7 @@ pub mod game {
     }
 
     // user wallet -> db_account
-    pub fn remit_for_random(
-        ctx: Context<RemitForRandom>,
-    ) -> Result<()> {
+    pub fn remit_for_random(ctx: Context<Remit>) -> Result<()> {
         let required_lamports = 3_000_000; // 0.0003 SOL
 
         let (expected_pda, _expected_bump) = Pubkey::find_program_address(
@@ -62,6 +60,8 @@ pub mod game {
         ctx: Context<FinalizeGame>,
         remit_tx_hash: String,
         block_hash: String,
+        slot: u64,
+        block_time: u64,
     ) -> Result<()> {
         // db_account.counter 값을 seed로 사용하여 고유한 PDA를 생성합니다.
         let counter_bytes = ctx.accounts.db_account.counter.to_le_bytes();
@@ -73,21 +73,22 @@ pub mod game {
             return Err(ErrorCode::InvalidAccount.into());
         }
 
-        // 랜덤 결과 계산
-        let combined = format!("{}{}", remit_tx_hash, block_hash);
+        // 랜덤 결과 계산: remit_tx_hash, block_hash, slot, block_time을 결합하여 해시 생성
+        let combined = format!("{}{}{}{}", remit_tx_hash, block_hash, slot, block_time);
         let hash_result: Hash = hash(combined.as_bytes());
         let bytes = hash_result.to_bytes();
         let mut num: u64 = 0;
         for i in 0..8 {
             num = (num << 8) | (bytes[i] as u64);
         }
-        let random_value = num as f64 / u64::MAX as f64;
-        let item = if random_value < 0.5 { "lose" } else { "win" };
+        // 1에서 100 사이의 자연수로 결정 (num % 100은 0~99, +1 하면 1~100)
+        let random_number = (num % 100) + 1;
 
         // 새 code_account(노드)를 초기화합니다.
         let code_account = &mut ctx.accounts.code_account;
         code_account.bump = bump;
-        code_account.code = item.to_string();
+        // 여기서 random_number 값을 문자열로 변환하여 저장합니다.
+        code_account.nft = random_number.to_string();
         // 이전 노드(혹은 초기값 "GENESIS")를 before_tx에 저장합니다.
         code_account.before_tx = ctx.accounts.db_account.tail_tx.clone();
 
@@ -95,7 +96,7 @@ pub mod game {
     }
 
     // db_account -> user wallet
-    pub fn db_code_in(ctx: Context<DbCodeIn>, code_tx_hash: String) -> Result<()> {
+    pub fn db_code_in(ctx: Context<Remit>, code_tx_hash: String) -> Result<()> {
         let required_lamports = 3_000_000;
 
         let (expected_db_pda, _expected_db_bump) = Pubkey::find_program_address(
@@ -131,7 +132,7 @@ pub mod game {
 #[account]
 pub struct DBaccount {
     pub bump: u8,
-    pub handle: String,
+    pub nickname: String,
     pub tail_tx: String,
     pub counter: u64, // 새로운 code_account 생성을 위한 카운터
 }
@@ -139,7 +140,7 @@ pub struct DBaccount {
 #[account]
 pub struct CodeAccount {
     pub bump: u8,
-    pub code: String,
+    pub nft: String,
     pub before_tx: String,
 }
 
@@ -159,16 +160,7 @@ pub struct UserInitialize<'info> {
 }
 
 #[derive(Accounts)]
-pub struct RemitForRandom<'info> {
-    #[account(mut)]
-    pub user: Signer<'info>,
-    #[account(mut)]
-    pub db_account: Account<'info, DBaccount>,
-    pub system_program: Program<'info, System>,
-}
-
-#[derive(Accounts)]
-pub struct DbCodeIn<'info> {
+pub struct Remit<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
     #[account(mut)]

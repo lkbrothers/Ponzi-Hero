@@ -112,6 +112,14 @@ export type Game = {
         {
           "name": "blockHash",
           "type": "string"
+        },
+        {
+          "name": "slot",
+          "type": "u64"
+        },
+        {
+          "name": "blockTime",
+          "type": "u64"
         }
       ]
     },
@@ -278,7 +286,7 @@ export type Game = {
             "type": "u8"
           },
           {
-            "name": "code",
+            "name": "nft",
             "type": "string"
           },
           {
@@ -298,7 +306,7 @@ export type Game = {
             "type": "u8"
           },
           {
-            "name": "handle",
+            "name": "nickname",
             "type": "string"
           },
           {
