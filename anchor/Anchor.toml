@@ -9,6 +9,7 @@ skip-lint = false
 counter = "coUnmi3oBUtwtd9fjeAvSsJssXh5A5xyPbhpewyzRVF"
 credit = "H1kXTuAJntnCELS2phbS7bMcD4VYy5CQK3wKFC9BMgfL"
 nft = "3BjKmutGGbVtnVeeJnNg9xKqkAticq7WYvBjuBr1dQab"
+shop = "CR8Sox2FniGkNFQ6AmE7FGi5cJjpJn7QTvhhgZcbg9PX"
 
 [registry]
 url = "https://api.apr.dev"
