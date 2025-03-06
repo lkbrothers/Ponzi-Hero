@@ -17,7 +17,7 @@ describe("credit", () => {
     
     it("READ CREDIT ACCOUNT TEST (ACCOUNT NOT CREATED YET)", async () => {
         try {
-            // PDA로 CreditAccount 데이터를 fetch 시도 (아직 생성되지 않았으므로 실패해야 함)
+            // PDA로 CreditAccount 데이터 fetch 시도 (아직 생성되지 않았으므로 실패해야 함)
             await program.account.creditAccount.fetch(creditAccountPda);
             assert.fail("Account should not exist yet");
         } catch (err) {

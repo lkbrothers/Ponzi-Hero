@@ -50,7 +50,7 @@ pub struct CreateCreditAccount<'info> {
     #[account(mut)]
     pub owner: Signer<'info>,
     #[account(init, seeds = [b"credit", owner.key().as_ref()],
-        bump, payer = owner, space = 8 + 8 + 32)] // Discriminator(8) + balance(8) + owner(32)
+        bump, payer = owner, space = 8 + 32 + 8)] // Discriminator(8) + owner(32) + balance(8)
     pub credit_account: Account<'info, CreditAccount>,
     pub system_program: Program<'info, System>,
 }
