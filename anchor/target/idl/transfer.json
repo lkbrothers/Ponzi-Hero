@@ -1,0 +1,114 @@
+{
+  "address": "6LDk9tvtR5hoSp1QYZHsqdrVHv32tac6r8NYXjJam1M5",
+  "metadata": {
+    "name": "transfer",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "transfer_from_db_to_user",
+      "discriminator": [
+        72,
+        212,
+        104,
+        32,
+        221,
+        86,
+        36,
+        42
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "db_account",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "transfer_from_user_to_db",
+      "discriminator": [
+        80,
+        253,
+        46,
+        69,
+        37,
+        178,
+        163,
+        57
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "db_account",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "DBAccount",
+      "discriminator": [
+        91,
+        119,
+        194,
+        92,
+        234,
+        59,
+        240,
+        195
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InsufficientFunds",
+      "msg": "Insufficient funds to send code."
+    },
+    {
+      "code": 6001,
+      "name": "InvalidTransfer",
+      "msg": "InvalidTransfer"
+    }
+  ],
+  "types": [
+    {
+      "name": "DBAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "tail_tx",
+            "type": "string"
+          }
+        ]
+      }
+    }
+  ]
+}

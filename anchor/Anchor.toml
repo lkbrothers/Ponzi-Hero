@@ -7,8 +7,9 @@ skip-lint = false
 
 [programs.localnet]
 counter = "G8UJpQknzHjWAy3tRhrFCXqYXeZ35VHdL3cj86RfGEEj"
-game = "3QfKEYFr6fgT1oc2wjptWMQoB6Qf96PPKqzutPQqUrz2"
-play = "9nb1AEZzVaC1VvoQAUoDJTuZK3x2uZDQ2cZd3tuAQwzC"
+code_in = "4Sz8xKjDR3tmb24HhMJjLYcLH2B6pmNPcbTUeYwYubUk"
+game = "37Z9j1LjgPRHLnB3S3cTL7t4mCSsnWmrtUJj5u9eSBQi"
+transfer = "6LDk9tvtR5hoSp1QYZHsqdrVHv32tac6r8NYXjJam1M5"
 
 [registry]
 url = "https://api.apr.dev"

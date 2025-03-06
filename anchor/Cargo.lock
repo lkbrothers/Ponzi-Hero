@@ -631,6 +631,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
 
 [[package]]
+name = "code_in"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+]
+
+[[package]]
 name = "console_error_panic_hook"
 version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -791,6 +798,8 @@ name = "game"
 version = "0.1.0"
 dependencies = [
  "anchor-lang",
+ "code_in",
+ "transfer",
 ]
 
 [[package]]
@@ -1114,13 +1123,6 @@ name = "opaque-debug"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c08d65885ee38876c4f86fa503fb49d7b507c2b62552df7c70b2fce627e06381"
-
-[[package]]
-name = "paly"
-version = "0.1.0"
-dependencies = [
- "anchor-lang",
-]
 
 [[package]]
 name = "parking_lot"
@@ -1752,6 +1754,14 @@ dependencies = [
  "serde_spanned",
  "toml_datetime",
  "winnow 0.6.15",
+]
+
+[[package]]
+name = "transfer"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+ "code_in",
 ]
 
 [[package]]

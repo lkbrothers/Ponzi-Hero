@@ -5,28 +5,35 @@ import { useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 import { ellipsify } from '../ui/ui-layout'
 import { ExplorerLink } from '../cluster/cluster-ui'
-import { useGameProgram, useGameProgramAccount } from './game-data-access'
-
+import { useProgram, useProgramAccount } from './game-data-access'
+import { BN } from '@coral-xyz/anchor'
 /* 
   Account 초기화 버튼
   - "Account Init" 버튼을 누르면 userInitialize 실행하여 dbAccount가 생성됨
 */
 export function GameInit({ userPublicKey }: { userPublicKey: PublicKey }) {
-    const { userInitialize } = useGameProgram()
+    const { initializeGame, DbAccounts, codeInProgramId } = useProgram()
     const [isClicked, setIsClicked] = useState(false)
+
+    const [dbAccountPDA] = PublicKey.findProgramAddressSync(
+        [userPublicKey.toBuffer()],
+        codeInProgramId
+    )
 
     const handleClick = async () => {
         setIsClicked(true); // 버튼 클릭 시 비활성화
-        await userInitialize.mutateAsync(userPublicKey);
+        await initializeGame.mutateAsync({
+            userPublicKey,
+        });
     };
 
     return (
         <button
             className="btn btn-primary"
             onClick={handleClick}
-            disabled={isClicked || userInitialize.isPending} // 클릭했거나 실행 중이면 비활성화
+            disabled={isClicked || initializeGame.isPending} // 클릭했거나 실행 중이면 비활성화
         >
-            {userInitialize.isPending ? "Initializing..." : "Create"}
+            {initializeGame.isPending ? "Initializing..." : "Create"}
         </button>
     )
 }
@@ -38,7 +45,7 @@ export function GameInit({ userPublicKey }: { userPublicKey: PublicKey }) {
   - Game Start 버튼을 눌러 생성되는 code_account는 카드 형식으로 나열함.
 */
 export function GameList({ userPublicKey }: { userPublicKey: PublicKey }) {
-    const { DbAccounts, getProgramAccount, CodeAccounts } = useGameProgram()
+    const { DbAccounts, getProgramAccount, CodeAccounts } = useProgram()
 
     if (getProgramAccount.isLoading) {
         return <span className="loading loading-spinner loading-lg"></span>
@@ -85,17 +92,20 @@ export function GameList({ userPublicKey }: { userPublicKey: PublicKey }) {
 */
 function GameDashboard({ userPublicKey, dbAccount }: { userPublicKey: PublicKey, dbAccount: PublicKey }) {
     const {
-        dbAccountQuery,
-        remitForRandomMutation,
-        dbCodeInMutation,
-        finalizeGameMutation,
+        DbAccounts,
+        CodeAccounts,
         fetchCodeChain,
-    } = useGameProgramAccount({ userPublicKey, dbAccount })
+        fetchBlockInfo,
+        codeInProgramId,
+        fetchTimeStamp,
+    } = useProgram()
 
-    const { fetchBlockInfo } = useGameProgram()
+    const { dummyTx, playGame, dbAccountQuery } = useProgramAccount({
+        userPublicKey,
+        dbAccount,
+    })
 
     // 최신 코드 계정의 키(문자열)를 저장 (dbAccount.tailTx를 사용)
-    const nickname = useMemo(() => dbAccountQuery.data?.nickname ?? '', [dbAccountQuery.data?.nickname])
     const recentTailTx = useMemo(() => dbAccountQuery.data?.tailTx ?? '', [dbAccountQuery.data?.tailTx])
 
     // codeChain을 상태로 관리
@@ -110,53 +120,70 @@ function GameDashboard({ userPublicKey, dbAccount }: { userPublicKey: PublicKey,
         }
     }, [recentTailTx, fetchCodeChain])
 
-    // Remit 및 Finalize 체인 실행
-    const handleRemitAndFinalize = async () => {
-        try {
-            // 1. remitForRandom 실행 → remitTxHash 획득
-            const remitTxHash = await remitForRandomMutation.mutateAsync()
-            toast.success(`Remit successful: ${remitTxHash}`)
-
-            // 2. game-data-access의 fetchBlockInfo 함수를 사용해 블록 정보를 조회
-            const { blockHash, slot, blockTime } = await fetchBlockInfo(remitTxHash)
-
-            // 3. finalizeGame 실행: remitTxHash, blockHash 전달
-            const finalizeSignature = await finalizeGameMutation.mutateAsync({
-                remitTxHash,
-                blockHash,
-                slot,
-                blockTime: blockTime ?? 0,
-            })
-            toast.success(`Finalize Game successful: ${finalizeSignature}`)
-
-            // 4. finalizeGame의 signature를 dbCodeInMutation의 tailTx 파라미터로 전달하여 실행
-            await dbCodeInMutation.mutateAsync(finalizeSignature)
-            toast.success(`db_code_in updated with new tailTx: ${finalizeSignature}`)
-
-            // 5. 새롭게 생성된 tailTx (finalizeSignature)를 기준으로 codeChain 재조회하여 업데이트
-            const updatedChain = await fetchCodeChain(finalizeSignature)
-            setCodeChain(updatedChain)
-        } catch (error) {
-            console.error(error)
-            toast.error("Failed to execute remit/finalize chain")
+    const setup = async () => {
+        const timestamp = await fetchTimeStamp();  // ✅ 비동기 처리 (await 추가)
+        
+        if (timestamp === null) {
+            throw new Error("Failed to fetch timestamp");
         }
-    }
+    
+        // Rust에서 `to_le_bytes()`를 사용했으므로, TypeScript에서도 동일하게 변환
+        const timestampBuffer = Buffer.alloc(8);
+        timestampBuffer.writeBigUInt64LE(BigInt(timestamp));  // ✅ timestamp 변환
+    
+        const [codeAccountPDA] = PublicKey.findProgramAddressSync(
+            [userPublicKey.toBuffer(), timestampBuffer],
+            codeInProgramId
+        );
+    
+        // Remit 및 Finalize 체인 실행
+        const letsPlay = async () => {
+            try {
+                const dummyTxHash = await dummyTx.mutateAsync({
+                    dbAccount: dbAccount,
+                    codeAccount: codeAccountPDA,
+                    timestamp: new BN(timestamp),  // ✅ timestamp를 올바르게 전달
+                });
+                toast.success(`Remit successful: ${dummyTxHash}`);
+    
+                const { blockHash, slot, blockTime } = await fetchBlockInfo(dummyTxHash);
+    
+                await playGame.mutateAsync({
+                    dbAccount: dbAccount,
+                    codeAccount: codeAccountPDA,
+                    dummyTx: dummyTxHash,
+                    blockHash,
+                    slot,
+                    blockTime: blockTime ?? 0,
+                });
+                toast.success(`Play Game successful: ${dummyTxHash}`);
+    
+                const updatedChain = await fetchCodeChain(dummyTxHash);
+                setCodeChain(updatedChain);
+            } catch (error) {
+                console.error(error);
+                toast.error("Failed to execute remit/finalize chain");
+            }
+        };
+    
+        // 실행
+        await letsPlay();
+    };
 
     return (
         <div className="space-y-6">
-            
+
             <div className="text-center">
                 <h3 className="text-xl font-bold">DB Account Info</h3>
-                <p><strong>Nickname:</strong> {nickname}</p>
                 <p><strong>TailTx:</strong> {recentTailTx}</p>
             </div>
-            
+
             <div className="text-center">
-                <button className="btn btn-primary" onClick={handleRemitAndFinalize}>
+                <button className="btn btn-primary" onClick={setup}>
                     Game Start
                 </button>
             </div>
-            
+
             <div className="grid md:grid-cols-2 gap-4">
                 {codeChain.length > 0 ? (
                     codeChain.map((entry, idx) => (

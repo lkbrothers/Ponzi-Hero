@@ -1,6 +1,6 @@
 'use client'
 
-import { getGameProgram, getGameProgramId } from '@project/anchor'
+import { getGameProgram, getGameProgramId, getCodeInProgram, getCodeInProgramId, getTransferProgram, getTransferProgramId } from '@project/anchor'
 import { useConnection } from '@solana/wallet-adapter-react'
 import { Cluster, PublicKey, SystemProgram } from '@solana/web3.js'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -11,43 +11,70 @@ import { useAnchorProvider } from '../solana/solana-provider'
 import { useTransactionToast } from '../ui/ui-layout'
 import BN from 'bn.js'
 
-export function useGameProgram() {
+export function useProgram() {
     const { connection } = useConnection()
     const { cluster } = useCluster()
     const transactionToast = useTransactionToast()
     const provider = useAnchorProvider()
-    const programId = useMemo(() => getGameProgramId(cluster.network as Cluster), [cluster])
-    const program = useMemo(() => getGameProgram(provider, programId), [provider, programId])
+    const gameProgramId = useMemo(() => getGameProgramId(cluster.network as Cluster), [cluster])
+    const gameProgram = useMemo(() => getGameProgram(provider, gameProgramId), [provider, gameProgramId])
+    const codeInProgramId = useMemo(() => getCodeInProgramId(cluster.network as Cluster), [cluster])
+    const codeInProgram = useMemo(() => getCodeInProgram(provider, codeInProgramId), [provider, codeInProgramId])
+    const transferProgramId = useMemo(() => getTransferProgramId(cluster.network as Cluster), [cluster])
+    const transferProgram = useMemo(() => getTransferProgram(provider, transferProgramId), [provider, transferProgramId])
 
     const DbAccounts = useQuery({
         queryKey: ['game', 'dbAccountAll', { cluster }],
-        queryFn: () => program.account.dBaccount.all(),
+        queryFn: () => gameProgram.account.dbAccount.all(),
     })
 
     const CodeAccounts = useQuery({
         queryKey: ['game', 'codeAccountAll', { cluster }],
-        queryFn: () => program.account.codeAccount.all(),
+        queryFn: () => gameProgram.account.codeAccount.all(),
     })
 
     const getProgramAccount = useQuery({
         queryKey: ['get-program-account', { cluster }],
-        queryFn: () => connection.getParsedAccountInfo(programId),
+        queryFn: () => connection.getParsedAccountInfo(gameProgramId),
     })
 
-    const userInitialize = useMutation({
-        mutationKey: ['game', 'userInitialize', { cluster }],
-        mutationFn: (userPublicKey: PublicKey) =>
-            program.methods
-                .userInitialize()
-                .accounts({ user: userPublicKey })
-                .rpc(),
+    // const dbAccountQuery = useQuery({
+    //     queryKey: ['game', 'dbAccountFetch', { cluster}],
+    //     queryFn: (dbAccount: PublicKey) => gameProgram.account.dbAccount.fetch(dbAccount),
+    // })
+
+    // const codeAccountQuery = useQuery({
+    //     queryKey: ['game', 'codeAccountFetch', { cluster }],
+    //     queryFn: (codeAccount: PublicKey) => gameProgram.account.codeAccount.fetch(codeAccount),
+    // })
+
+    const initializeGame = useMutation({
+        mutationKey: ['game', 'initializeGame', { cluster }],
+        mutationFn: ({
+            userPublicKey,
+        }: {
+            userPublicKey: PublicKey,
+        }) => {
+            return gameProgram.methods
+                .initializeGame()
+                .accounts({
+                    user: userPublicKey,
+                    codeInProgram: codeInProgramId,
+                })
+                .rpc();
+        },
         onSuccess: (signature) => {
-            transactionToast(signature)
-            return { DbAccounts: DbAccounts.refetch(), CodeAccounts: CodeAccounts.refetch() }
+            transactionToast(signature);
+            return { DbAccounts: DbAccounts.refetch(), CodeAccounts: CodeAccounts.refetch() };
         },
         onError: () => toast.error('Failed to initialize account'),
-    })
+    });
 
+    const fetchTimeStamp = async () => {
+        const slot = await connection.getSlot()
+        const blockTime = await connection.getBlockTime(slot)
+        return blockTime
+    }
     // fetchBlockInfo: remit 트랜잭션 해시를 받아 블록 정보를 조회
     const fetchBlockInfo = async (
         remitTxHash: string
@@ -61,97 +88,6 @@ export function useGameProgram() {
         const blockTime = txResponse.blockTime ?? null;
         return { blockHash, slot, blockTime };
     }
-
-    return {
-        connection,
-        program,
-        programId,
-        DbAccounts,
-        CodeAccounts,
-        getProgramAccount,
-        userInitialize,
-        fetchBlockInfo,
-    }
-}
-
-export function useGameProgramAccount({
-    userPublicKey,
-    dbAccount,
-}: {
-    userPublicKey: PublicKey,
-    dbAccount: PublicKey,
-}) {
-
-    const { cluster } = useCluster()
-    const transactionToast = useTransactionToast()
-    const { program, connection } = useGameProgram()
-
-    const dbAccountQuery = useQuery({
-        queryKey: ['game', 'fetch', { cluster, dbAccount }],
-        queryFn: () => program.account.dBaccount.fetch(dbAccount),
-    })
-
-    const remitForRandomMutation = useMutation({
-        mutationKey: ['game', 'remitForRandom', { cluster, dbAccount }],
-        mutationFn: () =>
-            program.methods
-                .remitForRandom()
-                .accounts({
-                    user: userPublicKey,
-                    dbAccount: dbAccount,
-                })
-                .rpc(),
-        onSuccess: (signature) => {
-            transactionToast(signature)
-            return dbAccountQuery.refetch()
-        },
-        onError: () => toast.error('Failed to remit for random'),
-    })
-
-    const dbCodeInMutation = useMutation({
-        mutationKey: ['game', 'dbCodeIn', { cluster, dbAccount }],
-        mutationFn: (codeTxHash: string) =>
-            program.methods
-                .dbCodeIn(codeTxHash)
-                .accounts({
-                    user: userPublicKey,
-                    dbAccount: dbAccount,
-                })
-                .rpc(),
-        onSuccess: (signature) => {
-            transactionToast(signature)
-            return { dbAccountQuery: dbAccountQuery.refetch() }
-        },
-        onError: () => toast.error('Failed to send db code'),
-    })
-
-    const finalizeGameMutation = useMutation({
-        mutationKey: ['game', 'finalizeGame', { cluster, dbAccount }],
-        mutationFn: ({
-            remitTxHash,
-            blockHash,
-            slot,
-            blockTime,
-        }: {
-            remitTxHash: string,
-            blockHash: string,
-            slot: number,
-            blockTime: number,
-        }) => {
-            return program.methods
-                .finalizeGame(remitTxHash, blockHash, new BN(slot), new BN(blockTime))
-                .accounts({
-                    user: userPublicKey,
-                    dbAccount: dbAccount,
-                })
-                .rpc()
-        },
-        onSuccess: (signature) => {
-            transactionToast(signature)
-            return { dbAccountQuery: dbAccountQuery.refetch(), }
-        },
-        onError: () => toast.error('Failed to finalize game'),
-    })
 
     const fetchCodeChain = useCallback(
         async (
@@ -201,7 +137,7 @@ export function useGameProgramAccount({
                 }
 
                 // 5. accountInfo를 디코딩하여 codeAccount의 데이터를 추출 (Anchor coder 사용)
-                const decoded = program.coder.accounts.decode("codeAccount", accountInfo.data);
+                const decoded = gameProgram.coder.accounts.decode("codeAccount", accountInfo.data);
 
                 // 6. 해당 데이터를 chain에 추가
                 const entry = {
@@ -222,10 +158,107 @@ export function useGameProgramAccount({
     )
 
     return {
-        dbAccountQuery,
-        remitForRandomMutation,
-        dbCodeInMutation,
-        finalizeGameMutation,
+        connection,
+        gameProgram,
+        gameProgramId,
+        codeInProgram,
+        codeInProgramId,
+        transferProgram,
+        transferProgramId,
+        DbAccounts,
+        CodeAccounts,
+        getProgramAccount,
+        initializeGame,
+        fetchBlockInfo,
         fetchCodeChain,
+        fetchTimeStamp,
+    }
+}
+
+export function useProgramAccount({
+    userPublicKey,
+    dbAccount,
+}: {
+    userPublicKey: PublicKey,
+    dbAccount: PublicKey,
+}) {
+
+    const { cluster } = useCluster()
+    const transactionToast = useTransactionToast()
+    const { gameProgram, codeInProgramId, transferProgramId } = useProgram()
+
+    const dbAccountQuery = useQuery({
+        queryKey: ['game', 'fetch', { cluster, dbAccount }],
+        queryFn: () => gameProgram.account.dbAccount.fetch(dbAccount),
+    })
+
+    const dummyTx = useMutation({
+        mutationKey: ['game', 'dummyTx', { cluster }],
+        mutationFn: ({
+            dbAccount,
+            codeAccount,
+            timestamp
+        }: {
+            dbAccount: PublicKey,
+            codeAccount: PublicKey,
+            timestamp: BN
+        }) => {
+            return gameProgram.methods
+                .dummyTx(timestamp)
+                .accounts({
+                    user: userPublicKey,
+                    dbAccount: dbAccount,
+                    codeAccount: codeAccount,
+                    transferProgram: transferProgramId,
+                    codeInProgram: codeInProgramId
+                })
+                .rpc();
+        },
+        onSuccess: (signature) => {
+            transactionToast(signature);
+            return { dbAccountQuery: dbAccountQuery.refetch() };
+        },
+        onError: () => toast.error('Failed to transfer from user to db'),
+    });
+
+    const playGame = useMutation({
+        mutationKey: ['game', 'playGame', { cluster }],
+        mutationFn: ({
+            dbAccount,
+            codeAccount,
+            dummyTx,
+            blockHash,
+            slot,
+            blockTime
+        }: {
+            dbAccount: PublicKey,
+            codeAccount: PublicKey,
+            dummyTx: string,
+            blockHash: string,
+            slot: number,
+            blockTime: number
+        }) => {
+            return gameProgram.methods
+                .playGame(dummyTx, blockHash, new BN(slot), new BN(blockTime))
+                .accounts({
+                    user: userPublicKey,
+                    dbAccount: dbAccount,
+                    codeAccount: codeAccount,
+                    codeInProgram: codeInProgramId,
+                    transferProgram: transferProgramId
+                })
+                .rpc();
+        },
+        onSuccess: (signature) => {
+            transactionToast(signature);
+            return { dbAccountQuery: dbAccountQuery.refetch() };
+        },
+        onError: () => toast.error('Failed to play game'),
+    });
+
+    return {
+        dbAccountQuery,
+        dummyTx,
+        playGame,
     }
 }

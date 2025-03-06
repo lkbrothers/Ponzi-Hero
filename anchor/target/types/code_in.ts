@@ -1,23 +1,29 @@
-{
-  "address": "37Z9j1LjgPRHLnB3S3cTL7t4mCSsnWmrtUJj5u9eSBQi",
+/**
+ * Program IDL in camelCase format in order to be used in JS/TS.
+ *
+ * Note that this is only a type helper and is not the actual IDL. The original
+ * IDL can be found at `target/idl/code_in.json`.
+ */
+export type CodeIn = {
+  "address": "4Sz8xKjDR3tmb24HhMJjLYcLH2B6pmNPcbTUeYwYubUk",
   "metadata": {
-    "name": "game",
+    "name": "codeIn",
     "version": "0.1.0",
     "spec": "0.1.0",
     "description": "Created with Anchor"
   },
   "instructions": [
     {
-      "name": "dummy_tx",
+      "name": "createCodeAccount",
       "discriminator": [
-        236,
-        227,
-        95,
-        171,
-        32,
-        207,
-        219,
-        219
+        255,
+        87,
+        132,
+        46,
+        195,
+        66,
+        147,
+        170
       ],
       "accounts": [
         {
@@ -26,27 +32,23 @@
           "signer": true
         },
         {
-          "name": "db_account",
-          "writable": true
+          "name": "codeAccount",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "user"
+              },
+              {
+                "kind": "arg",
+                "path": "timestamp"
+              }
+            ]
+          }
         },
         {
-          "name": "code_account",
-          "writable": true
-        },
-        {
-          "name": "code_in_program",
-          "docs": [
-            "CHECK"
-          ]
-        },
-        {
-          "name": "transfer_program",
-          "docs": [
-            "CHECK"
-          ]
-        },
-        {
-          "name": "system_program",
+          "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         }
       ],
@@ -58,16 +60,16 @@
       ]
     },
     {
-      "name": "initialize_game",
+      "name": "createDbAccount",
       "discriminator": [
-        44,
-        62,
-        102,
-        247,
-        126,
-        208,
-        130,
-        215
+        123,
+        206,
+        170,
+        23,
+        96,
+        135,
+        187,
+        197
       ],
       "accounts": [
         {
@@ -76,7 +78,7 @@
           "signer": true
         },
         {
-          "name": "db_account",
+          "name": "dbAccount",
           "writable": true,
           "pda": {
             "seeds": [
@@ -88,77 +90,86 @@
           }
         },
         {
-          "name": "code_in_program"
-        },
-        {
-          "name": "system_program",
+          "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": []
     },
     {
-      "name": "play_game",
+      "name": "updateCodeAccount",
       "discriminator": [
-        37,
-        88,
-        207,
-        85,
-        42,
-        144,
-        122,
-        197
+        153,
+        202,
+        209,
+        138,
+        111,
+        1,
+        86,
+        54
       ],
       "accounts": [
         {
           "name": "user",
           "writable": true,
-          "signer": true
-        },
-        {
-          "name": "db_account",
-          "writable": true
-        },
-        {
-          "name": "code_account",
-          "writable": true
-        },
-        {
-          "name": "code_in_program",
-          "docs": [
-            "CHECK"
+          "signer": true,
+          "relations": [
+            "codeAccount"
           ]
         },
         {
-          "name": "transfer_program",
-          "docs": [
-            "CHECK"
-          ]
+          "name": "codeAccount",
+          "writable": true
         }
       ],
       "args": [
         {
-          "name": "dummy_tx",
+          "name": "randomNumber",
+          "type": "u8"
+        },
+        {
+          "name": "beforeTx",
           "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "updateDbAccount",
+      "discriminator": [
+        62,
+        87,
+        1,
+        174,
+        35,
+        103,
+        140,
+        235
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "dbAccount"
+          ]
         },
         {
-          "name": "block_hash",
+          "name": "dbAccount",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "tailTx",
           "type": "string"
-        },
-        {
-          "name": "slot",
-          "type": "u64"
-        },
-        {
-          "name": "block_time",
-          "type": "u64"
         }
       ]
     }
   ],
   "accounts": [
     {
-      "name": "CodeAccount",
+      "name": "codeAccount",
       "discriminator": [
         65,
         67,
@@ -171,7 +182,7 @@
       ]
     },
     {
-      "name": "DBAccount",
+      "name": "dbAccount",
       "discriminator": [
         91,
         119,
@@ -186,7 +197,7 @@
   ],
   "types": [
     {
-      "name": "CodeAccount",
+      "name": "codeAccount",
       "type": {
         "kind": "struct",
         "fields": [
@@ -199,18 +210,18 @@
             "type": "u8"
           },
           {
-            "name": "random_number",
+            "name": "randomNumber",
             "type": "u8"
           },
           {
-            "name": "before_tx",
+            "name": "beforeTx",
             "type": "string"
           }
         ]
       }
     },
     {
-      "name": "DBAccount",
+      "name": "dbAccount",
       "type": {
         "kind": "struct",
         "fields": [
@@ -223,11 +234,11 @@
             "type": "u8"
           },
           {
-            "name": "tail_tx",
+            "name": "tailTx",
             "type": "string"
           }
         ]
       }
     }
   ]
-}
+};

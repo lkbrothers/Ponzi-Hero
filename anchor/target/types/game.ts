@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/game.json`.
  */
 export type Game = {
-  "address": "3QfKEYFr6fgT1oc2wjptWMQoB6Qf96PPKqzutPQqUrz2",
+  "address": "37Z9j1LjgPRHLnB3S3cTL7t4mCSsnWmrtUJj5u9eSBQi",
   "metadata": {
     "name": "game",
     "version": "0.1.0",
@@ -14,50 +14,16 @@ export type Game = {
   },
   "instructions": [
     {
-      "name": "dbCodeIn",
+      "name": "dummyTx",
       "discriminator": [
-        38,
-        100,
-        165,
-        242,
-        99,
-        137,
-        206,
-        108
-      ],
-      "accounts": [
-        {
-          "name": "user",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "dbAccount",
-          "writable": true
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "codeTxHash",
-          "type": "string"
-        }
-      ]
-    },
-    {
-      "name": "finalizeGame",
-      "discriminator": [
-        203,
+        236,
         227,
-        3,
-        167,
-        186,
-        102,
-        76,
-        10
+        95,
+        171,
+        32,
+        207,
+        219,
+        219
       ],
       "accounts": [
         {
@@ -71,33 +37,19 @@ export type Game = {
         },
         {
           "name": "codeAccount",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  101,
-                  101,
-                  100,
-                  104,
-                  101,
-                  114,
-                  101
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "user"
-              },
-              {
-                "kind": "account",
-                "path": "db_account.counter",
-                "account": "dBaccount"
-              }
-            ]
-          }
+          "writable": true
+        },
+        {
+          "name": "codeInProgram",
+          "docs": [
+            "CHECK"
+          ]
+        },
+        {
+          "name": "transferProgram",
+          "docs": [
+            "CHECK"
+          ]
         },
         {
           "name": "systemProgram",
@@ -106,7 +58,93 @@ export type Game = {
       ],
       "args": [
         {
-          "name": "remitTxHash",
+          "name": "timestamp",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "initializeGame",
+      "discriminator": [
+        44,
+        62,
+        102,
+        247,
+        126,
+        208,
+        130,
+        215
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "dbAccount",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "user"
+              }
+            ]
+          }
+        },
+        {
+          "name": "codeInProgram"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "playGame",
+      "discriminator": [
+        37,
+        88,
+        207,
+        85,
+        42,
+        144,
+        122,
+        197
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "dbAccount",
+          "writable": true
+        },
+        {
+          "name": "codeAccount",
+          "writable": true
+        },
+        {
+          "name": "codeInProgram",
+          "docs": [
+            "CHECK"
+          ]
+        },
+        {
+          "name": "transferProgram",
+          "docs": [
+            "CHECK"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "dummyTx",
           "type": "string"
         },
         {
@@ -122,87 +160,6 @@ export type Game = {
           "type": "u64"
         }
       ]
-    },
-    {
-      "name": "remitForRandom",
-      "discriminator": [
-        238,
-        111,
-        87,
-        135,
-        161,
-        97,
-        51,
-        115
-      ],
-      "accounts": [
-        {
-          "name": "user",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "dbAccount",
-          "writable": true
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "userInitialize",
-      "discriminator": [
-        223,
-        157,
-        253,
-        44,
-        62,
-        158,
-        83,
-        137
-      ],
-      "accounts": [
-        {
-          "name": "user",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "dbAccount",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  100,
-                  98,
-                  115,
-                  101,
-                  101,
-                  100,
-                  104,
-                  101,
-                  114,
-                  101
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "user"
-              }
-            ]
-          }
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": []
     }
   ],
   "accounts": [
@@ -220,59 +177,17 @@ export type Game = {
       ]
     },
     {
-      "name": "dBaccount",
+      "name": "dbAccount",
       "discriminator": [
-        207,
-        58,
-        197,
-        98,
-        85,
-        208,
-        80,
-        178
+        91,
+        119,
+        194,
+        92,
+        234,
+        59,
+        240,
+        195
       ]
-    }
-  ],
-  "errors": [
-    {
-      "code": 6000,
-      "name": "insufficientFunds",
-      "msg": "Insufficient funds to send code."
-    },
-    {
-      "code": 6001,
-      "name": "invalidWallet",
-      "msg": "Invalid wallet address."
-    },
-    {
-      "code": 6002,
-      "name": "invalidReceiver",
-      "msg": "Invalid receiver address."
-    },
-    {
-      "code": 6003,
-      "name": "fundsNotReceived",
-      "msg": "Funds were not received by the expected wallet."
-    },
-    {
-      "code": 6004,
-      "name": "invalidAccount",
-      "msg": "Provided code account is invalid."
-    },
-    {
-      "code": 6005,
-      "name": "invalidCodeFormat",
-      "msg": "invalidCodeFormat"
-    },
-    {
-      "code": 6006,
-      "name": "invalidInstructionData",
-      "msg": "invalidInstructionData"
-    },
-    {
-      "code": 6007,
-      "name": "invalidTransfer",
-      "msg": "invalidTransfer"
     }
   ],
   "types": [
@@ -282,12 +197,16 @@ export type Game = {
         "kind": "struct",
         "fields": [
           {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
             "name": "bump",
             "type": "u8"
           },
           {
-            "name": "nft",
-            "type": "string"
+            "name": "randomNumber",
+            "type": "u8"
           },
           {
             "name": "beforeTx",
@@ -297,25 +216,21 @@ export type Game = {
       }
     },
     {
-      "name": "dBaccount",
+      "name": "dbAccount",
       "type": {
         "kind": "struct",
         "fields": [
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
           {
             "name": "bump",
             "type": "u8"
           },
           {
-            "name": "nickname",
-            "type": "string"
-          },
-          {
             "name": "tailTx",
             "type": "string"
-          },
-          {
-            "name": "counter",
-            "type": "u64"
           }
         ]
       }

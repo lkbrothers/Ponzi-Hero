@@ -1,0 +1,1 @@
+pub const REQUIRED_LAMPORTS: u64 = 3_000_000; // 0.0003 SOL

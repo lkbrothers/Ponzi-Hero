@@ -1,23 +1,23 @@
 {
-  "address": "37Z9j1LjgPRHLnB3S3cTL7t4mCSsnWmrtUJj5u9eSBQi",
+  "address": "4Sz8xKjDR3tmb24HhMJjLYcLH2B6pmNPcbTUeYwYubUk",
   "metadata": {
-    "name": "game",
+    "name": "code_in",
     "version": "0.1.0",
     "spec": "0.1.0",
     "description": "Created with Anchor"
   },
   "instructions": [
     {
-      "name": "dummy_tx",
+      "name": "create_code_account",
       "discriminator": [
-        236,
-        227,
-        95,
-        171,
-        32,
-        207,
-        219,
-        219
+        255,
+        87,
+        132,
+        46,
+        195,
+        66,
+        147,
+        170
       ],
       "accounts": [
         {
@@ -26,24 +26,20 @@
           "signer": true
         },
         {
-          "name": "db_account",
-          "writable": true
-        },
-        {
           "name": "code_account",
-          "writable": true
-        },
-        {
-          "name": "code_in_program",
-          "docs": [
-            "CHECK"
-          ]
-        },
-        {
-          "name": "transfer_program",
-          "docs": [
-            "CHECK"
-          ]
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "user"
+              },
+              {
+                "kind": "arg",
+                "path": "_timestamp"
+              }
+            ]
+          }
         },
         {
           "name": "system_program",
@@ -52,22 +48,22 @@
       ],
       "args": [
         {
-          "name": "timestamp",
+          "name": "_timestamp",
           "type": "u64"
         }
       ]
     },
     {
-      "name": "initialize_game",
+      "name": "create_db_account",
       "discriminator": [
-        44,
-        62,
-        102,
-        247,
-        126,
-        208,
-        130,
-        215
+        123,
+        206,
+        170,
+        23,
+        96,
+        135,
+        187,
+        197
       ],
       "accounts": [
         {
@@ -88,9 +84,6 @@
           }
         },
         {
-          "name": "code_in_program"
-        },
-        {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
@@ -98,60 +91,72 @@
       "args": []
     },
     {
-      "name": "play_game",
+      "name": "update_code_account",
       "discriminator": [
-        37,
-        88,
-        207,
-        85,
-        42,
-        144,
-        122,
-        197
+        153,
+        202,
+        209,
+        138,
+        111,
+        1,
+        86,
+        54
       ],
       "accounts": [
         {
           "name": "user",
           "writable": true,
-          "signer": true
-        },
-        {
-          "name": "db_account",
-          "writable": true
+          "signer": true,
+          "relations": [
+            "code_account"
+          ]
         },
         {
           "name": "code_account",
           "writable": true
-        },
-        {
-          "name": "code_in_program",
-          "docs": [
-            "CHECK"
-          ]
-        },
-        {
-          "name": "transfer_program",
-          "docs": [
-            "CHECK"
-          ]
         }
       ],
       "args": [
         {
-          "name": "dummy_tx",
+          "name": "random_number",
+          "type": "u8"
+        },
+        {
+          "name": "before_tx",
           "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "update_db_account",
+      "discriminator": [
+        62,
+        87,
+        1,
+        174,
+        35,
+        103,
+        140,
+        235
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "db_account"
+          ]
         },
         {
-          "name": "block_hash",
+          "name": "db_account",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "tail_tx",
           "type": "string"
-        },
-        {
-          "name": "slot",
-          "type": "u64"
-        },
-        {
-          "name": "block_time",
-          "type": "u64"
         }
       ]
     }

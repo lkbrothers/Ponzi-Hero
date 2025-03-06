@@ -1,208 +1,189 @@
 #![allow(clippy::result_large_err)]
 
 use anchor_lang::prelude::*;
-use anchor_lang::system_program;
 use anchor_lang::solana_program::hash::{hash, Hash};
 
-declare_id!("3QfKEYFr6fgT1oc2wjptWMQoB6Qf96PPKqzutPQqUrz2");
+// use anchor_lang::solana_program::{program::invoke_signed, system_instruction, rent::Rent};
+
+pub mod context;
+
+use crate::context::*;
+
+use code_in::cpi::{
+    accounts::{
+        CreateDBAccount,
+        UpdateDBAccount,
+        CreateCodeAccount,
+        UpdateCodeAccount
+    }, 
+    create_db_account,
+    update_db_account,
+    create_code_account,
+    update_code_account
+};
+use transfer::cpi::{
+    accounts::{
+        TransferFromUserToDb,
+        TransferFromDbToUser
+    }, 
+    transfer_from_user_to_db,
+    transfer_from_db_to_user
+};
+
+declare_id!("37Z9j1LjgPRHLnB3S3cTL7t4mCSsnWmrtUJj5u9eSBQi");
 
 #[program]
 pub mod game {
     use super::*;
 
-    pub fn user_initialize(ctx: Context<UserInitialize>) -> Result<()> {
-        let (_expected_db_pda, expected_db_bump) = Pubkey::find_program_address(
-            &[b"dbseedhere", ctx.accounts.user.key.as_ref()],
-            ctx.program_id,
+    pub fn initialize_game(ctx: Context<InitializeGame>) -> Result<()> {
+
+        let cpi_create_db_account_ctx = CpiContext::new(
+            ctx.accounts.code_in_program.to_account_info(),
+            CreateDBAccount {
+                user: ctx.accounts.user.to_account_info(),
+                db_account: ctx.accounts.db_account.to_account_info(),
+                system_program: ctx.accounts.system_program.to_account_info(),
+            }
         );
-
-        let db_account = &mut ctx.accounts.db_account;
-        db_account.bump = expected_db_bump;
-        db_account.nickname = String::new();
-        // 체인의 최초 종료값을 "GENESIS"로 설정합니다.
-        db_account.tail_tx = "GENESIS".to_string();
-        db_account.counter = 0;
-
+        create_db_account(cpi_create_db_account_ctx)?;
+    
         Ok(())
     }
 
-    // user wallet -> db_account
-    pub fn remit_for_random(ctx: Context<Remit>) -> Result<()> {
-        let required_lamports = 3_000_000; // 0.0003 SOL
 
-        let (expected_pda, _expected_bump) = Pubkey::find_program_address(
-            &[b"dbseedhere", ctx.accounts.user.key.as_ref()],
-            ctx.program_id,
+    // pub fn initialize_game(ctx: Context<InitializeGame>) -> Result<()> {
+    //     let db_account_info = ctx.accounts.db_account.to_account_info();
+
+    //     // 계정이 아직 초기화되지 않은 경우에만 생성
+    //     if db_account_info.data_is_empty() {
+    //         let rent = Rent::get()?;
+    //         let space: usize = 8 + 1 + 50 + 8 + 100;
+    //         let lamports = rent.minimum_balance(space);
+
+    //         // PDA 생성 시 사용한 seeds와 bump 정보
+    //         let bump = ctx.bumps.db_account;
+    //         let seeds_inner: &[&[u8]] = &[ctx.accounts.user.key.as_ref(), &[bump]];
+    //         let signer_seeds: &[&[&[u8]]] = &[seeds_inner];
+
+    //         // db_account의 소유자를 code_in 프로그램으로 설정하기 위해,
+    //         // owner를 ctx.accounts.code_in_program.key()로 지정
+    //         let create_ix = system_instruction::create_account(
+    //             &ctx.accounts.user.key(),         // payer
+    //             &db_account_info.key(),           // 생성할 PDA 주소
+    //             lamports,                         // 필요한 lamports
+    //             space as u64,                     // 할당할 공간
+    //             &ctx.accounts.code_in_program.key() // 소유자를 code_in 프로그램으로 지정
+    //         );
+
+    //         invoke_signed(
+    //             &create_ix,
+    //             &[
+    //                 ctx.accounts.user.to_account_info(),
+    //                 db_account_info.clone(),
+    //                 ctx.accounts.system_program.to_account_info(),
+    //             ],
+    //             signer_seeds,
+    //         )?;
+    //     }
+
+    //     // 이후 CPI를 통해 code_in 프로그램의 create_db_account 호출
+    //     let cpi_create_db_account_ctx = CpiContext::new(
+    //         ctx.accounts.code_in_program.to_account_info(),
+    //         CreateDBAccount {
+    //             user: ctx.accounts.user.to_account_info(),
+    //             db_account: ctx.accounts.db_account.to_account_info(),
+    //             system_program: ctx.accounts.system_program.to_account_info(),
+    //         }
+    //     );
+    //     create_db_account(cpi_create_db_account_ctx)?;
+
+    //     Ok(())
+    // }
+    
+    pub fn dummy_tx(ctx: Context<DummyTx>, timestamp: u64) -> Result<()> {
+    
+        // random 값을 만드는데 쓰일 더미 트랜잭션에 대한 송금 이벤트
+        let cpi_transfer_from_user_to_db_ctx = CpiContext::new(
+            ctx.accounts.transfer_program.to_account_info(),
+            TransferFromUserToDb {
+                user: ctx.accounts.user.to_account_info(),
+                db_account: ctx.accounts.db_account.to_account_info(),
+                system_program: ctx.accounts.system_program.to_account_info(),
+            }   
         );
-        if ctx.accounts.db_account.key() != expected_pda {
-            return Err(ErrorCode::InvalidAccount.into());
-        }
-
-        // 송금 계좌(사용자 지갑)의 잔액 확인
-        let user_account_info = ctx.accounts.user.to_account_info();
-        if user_account_info.lamports() < required_lamports {
-            return Err(ErrorCode::InsufficientFunds.into());
-        }
-
-        let cpi_accounts = system_program::Transfer {
-            from: ctx.accounts.user.to_account_info(),
-            to: ctx.accounts.db_account.to_account_info(),
-        };
-        let cpi_program = ctx.accounts.system_program.to_account_info();
-        let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
-        system_program::transfer(cpi_ctx, required_lamports)?;
-
+        transfer_from_user_to_db(cpi_transfer_from_user_to_db_ctx)?;
+    
+        // code_account 생성
+        let cpi_create_code_account_ctx = CpiContext::new(
+            ctx.accounts.code_in_program.to_account_info(),
+            CreateCodeAccount {
+                user: ctx.accounts.user.to_account_info(),
+                code_account: ctx.accounts.code_account.to_account_info(),
+                system_program: ctx.accounts.system_program.to_account_info(),
+            }
+        );
+        create_code_account(cpi_create_code_account_ctx, timestamp)?;
+    
         Ok(())
     }
-
-    // finalize_game에서는 매 호출 시마다 새로운 code_account(새로운 노드)를 생성합니다.
-    pub fn finalize_game(
-        ctx: Context<FinalizeGame>,
-        remit_tx_hash: String,
+    
+    pub fn play_game(
+        ctx: Context<PlayGame>,
+        dummy_tx: String,
         block_hash: String,
         slot: u64,
-        block_time: u64,
+        block_time: u64
     ) -> Result<()> {
-        // db_account.counter 값을 seed로 사용하여 고유한 PDA를 생성합니다.
-        let counter_bytes = ctx.accounts.db_account.counter.to_le_bytes();
-        let (expected_pda, bump) = Pubkey::find_program_address(
-            &[b"seedhere", ctx.accounts.user.key.as_ref(), &counter_bytes],
-            ctx.program_id,
+    
+        // random 값 생성
+        let random_number = create_random_no(dummy_tx.clone(), block_hash, slot, block_time)?;
+    
+        let cpi_update_code_account_ctx = CpiContext::new(
+            ctx.accounts.code_in_program.to_account_info(),
+            UpdateCodeAccount {
+                user: ctx.accounts.user.to_account_info(),
+                code_account: ctx.accounts.code_account.to_account_info(),
+            }
         );
-        if ctx.accounts.code_account.key() != expected_pda {
-            return Err(ErrorCode::InvalidAccount.into());
-        }
-
-        // 랜덤 결과 계산: remit_tx_hash, block_hash, slot, block_time을 결합하여 해시 생성
-        let combined = format!("{}{}{}{}", remit_tx_hash, block_hash, slot, block_time);
-        let hash_result: Hash = hash(combined.as_bytes());
-        let bytes = hash_result.to_bytes();
-        let mut num: u64 = 0;
-        for i in 0..8 {
-            num = (num << 8) | (bytes[i] as u64);
-        }
-        // 1에서 100 사이의 자연수로 결정 (num % 100은 0~99, +1 하면 1~100)
-        let random_number = (num % 100) + 1;
-
-        // 새 code_account(노드)를 초기화합니다.
-        let code_account = &mut ctx.accounts.code_account;
-        code_account.bump = bump;
-        // 여기서 random_number 값을 문자열로 변환하여 저장합니다.
-        code_account.nft = random_number.to_string();
-        // 이전 노드(혹은 초기값 "GENESIS")를 before_tx에 저장합니다.
-        code_account.before_tx = ctx.accounts.db_account.tail_tx.clone();
-
+        update_code_account(cpi_update_code_account_ctx, random_number, ctx.accounts.db_account.tail_tx.clone())?;
+    
+        let cpi_update_db_account_ctx = CpiContext::new(
+            ctx.accounts.code_in_program.to_account_info(),
+            UpdateDBAccount {
+                user: ctx.accounts.user.to_account_info(),
+                db_account: ctx.accounts.db_account.to_account_info(),
+            }
+        );
+        update_db_account(cpi_update_db_account_ctx, dummy_tx.clone())?;
+    
+        let cpi_transfer_from_db_to_user_ctx = CpiContext::new(
+            ctx.accounts.transfer_program.to_account_info(),
+            TransferFromDbToUser {
+                user: ctx.accounts.user.to_account_info(),
+                db_account: ctx.accounts.db_account.to_account_info(),
+            }
+        );
+        transfer_from_db_to_user(cpi_transfer_from_db_to_user_ctx)?;
+    
         Ok(())
     }
+    
+}
 
-    // db_account -> user wallet
-    pub fn db_code_in(ctx: Context<Remit>, code_tx_hash: String) -> Result<()> {
-        let required_lamports = 3_000_000;
-
-        let (expected_db_pda, _expected_db_bump) = Pubkey::find_program_address(
-            &[b"dbseedhere", ctx.accounts.user.key.as_ref()],
-            ctx.program_id,
-        );
-        
-        if ctx.accounts.db_account.key() != expected_db_pda {
-            return Err(ErrorCode::InvalidAccount.into());
-        }
-
-        let receiver_account = ctx.accounts.user.to_account_info();
-        let db_pda_account_info = &ctx.accounts.db_account.to_account_info();
-
-        let pda_balance = db_pda_account_info.lamports();
-        if pda_balance < required_lamports {
-            return Err(ErrorCode::InvalidTransfer.into());
-        }
-
-        if **db_pda_account_info.try_borrow_lamports()? < required_lamports {
-            return Err(ErrorCode::InsufficientFunds.into());
-        }
-
-        **db_pda_account_info.try_borrow_mut_lamports()? -= required_lamports;
-        **receiver_account.try_borrow_mut_lamports()? += required_lamports;
-
-        ctx.accounts.db_account.tail_tx = code_tx_hash.clone();
-        ctx.accounts.db_account.counter += 1;
-
-        Ok(())
+pub fn create_random_no(
+    transfer_from_user_to_db_tx: String,
+    block_hash: String,
+    slot: u64,
+    block_time: u64
+) -> Result<u8> {
+    let combined = format!("{}{}{}{}", transfer_from_user_to_db_tx, block_hash, slot, block_time);
+    let hash_result: Hash = hash(combined.as_bytes());
+    let bytes = hash_result.to_bytes();
+    let mut num: u64 = 0;
+    for i in 0..8 {
+        num = (num << 8) | (bytes[i] as u64);
     }
-}
-#[account]
-pub struct DBaccount {
-    pub bump: u8,
-    pub nickname: String,
-    pub tail_tx: String,
-    pub counter: u64, // 새로운 code_account 생성을 위한 카운터
-}
-
-#[account]
-pub struct CodeAccount {
-    pub bump: u8,
-    pub nft: String,
-    pub before_tx: String,
-}
-
-#[derive(Accounts)]
-pub struct UserInitialize<'info> {
-    #[account(mut)]
-    pub user: Signer<'info>,
-    #[account(
-        init,
-        payer = user,
-        seeds = [b"dbseedhere", user.key().as_ref()],
-        bump,
-        space = 8 + 1 + 50 + 8 + 100
-    )]
-    pub db_account: Account<'info, DBaccount>,
-    pub system_program: Program<'info, System>,
-}
-
-#[derive(Accounts)]
-pub struct Remit<'info> {
-    #[account(mut)]
-    pub user: Signer<'info>,
-    #[account(mut)]
-    pub db_account: Account<'info, DBaccount>,
-    pub system_program: Program<'info, System>,
-}
-
-#[derive(Accounts)]
-pub struct FinalizeGame<'info> {
-    #[account(mut)]
-    pub user: Signer<'info>,
-    #[account(mut)]
-    pub db_account: Account<'info, DBaccount>,
-    // 매 finalize_game 호출 시 새로운 code_account를 생성합니다.
-    #[account(
-        init,
-        payer = user,
-        space = 1 + 1 + 900 + 100,
-        seeds = [b"seedhere", user.key().as_ref(), db_account.counter.to_le_bytes().as_ref()],
-        bump,
-    )]
-    pub code_account: Account<'info, CodeAccount>,
-    pub system_program: Program<'info, System>,
-}
-
-// 에러 코드 정의
-#[error_code]
-pub enum ErrorCode {
-    #[msg("Insufficient funds to send code.")]
-    InsufficientFunds,
-    #[msg("Invalid wallet address.")]
-    InvalidWallet,
-    #[msg("Invalid receiver address.")]
-    InvalidReceiver,
-    #[msg("Funds were not received by the expected wallet.")]
-    FundsNotReceived,
-    #[msg("Provided code account is invalid.")]
-    InvalidAccount,
-    #[msg("InvalidCodeFormat")]
-    InvalidCodeFormat,
-    #[msg("InvalidInstructionData")]
-    InvalidInstructionData,
-    #[msg("InvalidTransfer")]
-    InvalidTransfer,
+    let random_number = (num % 100) + 1;
+    Ok(random_number as u8)
 }
