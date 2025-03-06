@@ -6,86 +6,77 @@ declare_id!("H1kXTuAJntnCELS2phbS7bMcD4VYy5CQK3wKFC9BMgfL");
 pub mod credit {
     use super::*;
 
-    // CreditAccount 정보 확인
-    pub fn read_credit_account(ctx: Context<ReadCreditAccount>) -> Result<()> {
-        msg!("Credit Account Owner: {}", ctx.accounts.credit_account.owner);
-        msg!("Credit Account Balance: {}", ctx.accounts.credit_account.balance);
-        Ok(())
-    }
-
-    // CreditAccount 생성
+    // CREATE CREDIT ACCOUNT
     pub fn create_credit_account(ctx: Context<CreateCreditAccount>, initial_balance: u64) -> Result<()> {
         let credit_account = &mut ctx.accounts.credit_account;
         credit_account.owner = ctx.accounts.owner.key();
         credit_account.balance = initial_balance;
         Ok(())
     }
-    
-    // CreditAccount 잔액 수정
+
+    // UPDATE CREDIT ACCOUNT
     pub fn update_credit_account(ctx: Context<UpdateCreditAccount>, update_balance: u64) -> Result<()> {
         let credit_account = &mut ctx.accounts.credit_account;
         credit_account.balance = update_balance;
         Ok(())
     }
 
-    // CreditAccount 잔액 증가 (입금 기능)
-    pub fn add_credit_account(ctx: Context<UpdateCreditAccount>, amount: u64) -> Result<()> {
-        let credit_account = &mut ctx.accounts.credit_account;
-        credit_account.balance = credit_account.balance.checked_add(amount).ok_or(ErrorCode::Overflow)?;
-        Ok(())
-    }
-    
-    // CreditAccount 잔액 감소 (출금 기능)
-    pub fn sub_credit_account(ctx: Context<UpdateCreditAccount>, amount: u64) -> Result<()> {
-        let credit_account = &mut ctx.accounts.credit_account;
-        credit_account.balance = credit_account.balance.checked_sub(amount).ok_or(ErrorCode::Underflow)?;
-        Ok(())
-    }
-
-    // CreditAccount 삭제
+    // DELETE CREDIT ACCOUNT
     pub fn delete_credit_account(_ctx: Context<DeleteCreditAccount>) -> Result<()> {
         Ok(())
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // INCREASE CREDIT ACCOUNT
+    pub fn increase_credit_account(ctx: Context<UpdateCreditAccount>, amount: u64) -> Result<()> {
+        let credit_account = &mut ctx.accounts.credit_account;
+        credit_account.balance = credit_account.balance
+            .checked_add(amount).ok_or(ErrorCode::Overflow)?;
+        Ok(())
+    }
+    
+    // DECREASE CREDIT ACCOUNT
+    pub fn decrease_credit_account(ctx: Context<UpdateCreditAccount>, amount: u64) -> Result<()> {
+        let credit_account = &mut ctx.accounts.credit_account;
+        credit_account.balance = credit_account.balance
+            .checked_sub(amount).ok_or(ErrorCode::Underflow)?;
+        Ok(())
+    }
 }
 
-// READ CREDIT
-#[derive(Accounts)]
-pub struct ReadCreditAccount<'info> {
-    pub credit_account: Account<'info, CreditAccount>,
-}
-
-// CREATE CREDIT
+// CREATE CREDIT ACCOUNT
 #[derive(Accounts)]
 pub struct CreateCreditAccount<'info> {
-    // 디스크리미네이터 + Balance + Owner = 8 Byte + 8 Byte + 32 Byte
-    #[account(init, payer = owner, space = 8 + 8 + 32)]
-    pub credit_account: Account<'info, CreditAccount>,
     #[account(mut)]
     pub owner: Signer<'info>,
+    #[account(init, seeds = [b"credit", owner.key().as_ref()],
+        bump, payer = owner, space = 8 + 8 + 32)] // Discriminator(8) + balance(8) + owner(32)
+    pub credit_account: Account<'info, CreditAccount>,
     pub system_program: Program<'info, System>,
 }
 
-// UPDATE CREDIT
+// UPDATE CREDIT ACCOUNT
 #[derive(Accounts)]
 pub struct UpdateCreditAccount<'info> {
+    pub owner: Signer<'info>,
     #[account(mut, has_one = owner)]
     pub credit_account: Account<'info, CreditAccount>,
-    pub owner: Signer<'info>,
 }
 
-// DELETE CREDIT
+// DELETE CREDIT ACCOUNT
 #[derive(Accounts)]
 pub struct DeleteCreditAccount<'info> {
-    #[account(mut, has_one = owner, close = owner)]
-    pub credit_account: Account<'info, CreditAccount>,
     #[account(mut)]
     pub owner: Signer<'info>,
+    #[account(mut, has_one = owner, close = owner)]
+    pub credit_account: Account<'info, CreditAccount>,
 }
 
+// DEFINE CREDIT ACCOUNT
 #[account]
 pub struct CreditAccount {
-    pub balance: u64,
     pub owner: Pubkey,
+    pub balance: u64,
 }
 
 #[error_code]
