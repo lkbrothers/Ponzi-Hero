@@ -254,19 +254,6 @@ pub mod item {
     // }
 }
 
-#[derive(Accounts)]
-pub struct RandomMintItem<'info> {
-    #[account(mut)]
-    pub owner: Signer<'info>,
-    // discriminator(8) + owner(32) + grade(4 + 20) + name(4 + 20) + uri(4 + 20) + part(4 + 20) + equipped(1)
-    #[account(init, payer = owner, space = 8 + 32 + (4 + 20) + (4 + 20) + (4 + 20) + (4 + 20) + 1)]
-    pub item_account: Account<'info, ItemAccount>,
-    /// CHECK: Recent blockhashes sysvar account
-    #[account(address = anchor_lang::solana_program::sysvar::recent_blockhashes::ID)]
-    pub recent_blockhashes: AccountInfo<'info>,
-    pub system_program: Program<'info, System>,
-}
-
 // CREATE ITEM ACCOUNT
 #[derive(Accounts)]
 pub struct CreateItemAccount<'info> {
@@ -293,6 +280,20 @@ pub struct DeleteItemAccount<'info> {
     pub owner: Signer<'info>,
     #[account(mut, has_one = owner, close = owner)]
     pub item_account: Account<'info, ItemAccount>,
+}
+
+// RANDOM MINT ITEM ACCOUNT
+#[derive(Accounts)]
+pub struct RandomMintItem<'info> {
+    #[account(mut)]
+    pub owner: Signer<'info>,
+    // discriminator(8) + owner(32) + grade(4 + 20) + name(4 + 20) + uri(4 + 20) + part(4 + 20) + equipped(1)
+    #[account(init, payer = owner, space = 8 + 32 + (4 + 20) + (4 + 20) + (4 + 20) + (4 + 20) + 1)]
+    pub item_account: Account<'info, ItemAccount>,
+    /// CHECK: Recent blockhashes sysvar account
+    #[account(address = anchor_lang::solana_program::sysvar::recent_blockhashes::ID)]
+    pub recent_blockhashes: AccountInfo<'info>,
+    pub system_program: Program<'info, System>,
 }
 
 #[account]

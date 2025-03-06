@@ -1,16 +1,23 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { Item } from "../target/types/item";
+import { Credit } from "../target/types/credit";
 import * as assert from "assert";
 
 describe("item", () => {
     // 클라이언트가 로컬 클러스터(provider) 사용하도록 설정
     anchor.setProvider(anchor.AnchorProvider.env());
     const provider = anchor.AnchorProvider.env();
-    const program = anchor.workspace.Item as Program<Item>;
+    const itemProgram = anchor.workspace.Item as Program<Item>;
+    const creditProgram = anchor.workspace.Credit as Program<Credit>;
 
-    // 테스트용 Item Account Keypair
+    // 테스트용 Account Keypair
     const itemAccount = anchor.web3.Keypair.generate();
+    const creditAccount = anchor.web3.Keypair.generate();
+    let [creditAccountPda, bump] = anchor.web3.PublicKey.findProgramAddressSync(
+        [Buffer.from("credit"), provider.wallet.publicKey.toBuffer()], creditProgram.programId
+    );
+
     // 검증용 데이터
     const validGrades = ["NORMAL", "RARE", "EPIC", "UNIQUE", "LEGENDARY", "DEGENDARY"];
     const validItems = [
@@ -79,7 +86,7 @@ describe("item", () => {
     it("READ NFT ITEM ACCOUNT TEST (ACCOUNT NOT CREATED YET)", async () => {
         try {
             // ItemAccount 데이터 fetch 시도 (아직 생성되지 않았으므로 실패해야 함)
-            await program.account.itemAccount.fetch(itemAccount.publicKey);
+            await itemProgram.account.itemAccount.fetch(itemAccount.publicKey);
             assert.fail("Account should not exist yet");
         } catch (err) {
             console.log("As expected, Item account does not exist yet.");
@@ -94,7 +101,7 @@ describe("item", () => {
         const part = "weapon";
         const equipped = false;
 
-        await program.methods.createItemAccount(grade, name, uri, part, equipped)
+        await itemProgram.methods.createItemAccount(grade, name, uri, part, equipped)
             .accounts({
                 owner: provider.wallet.publicKey,
                 itemAccount: itemAccount.publicKey,
@@ -103,7 +110,7 @@ describe("item", () => {
             .rpc();
 
         // 결과 확인
-        const createdAccount = await program.account.itemAccount.fetch(itemAccount.publicKey);
+        const createdAccount = await itemProgram.account.itemAccount.fetch(itemAccount.publicKey);
         console.log("Created NFT ITEM Item Account:", createdAccount);
         assert.strictEqual(createdAccount.grade, grade, "Grade mismatch");
         assert.strictEqual(createdAccount.name, name, "Name mismatch");
@@ -114,7 +121,7 @@ describe("item", () => {
     });
 
     it("READ NFT ITEM ACCOUNT TEST (ACCOUNT CREATED)", async () => {
-        const response = await program.account.itemAccount.fetch(itemAccount.publicKey);
+        const response = await itemProgram.account.itemAccount.fetch(itemAccount.publicKey);
         console.log("Fetched Item Account Data:", response);
     });
 
@@ -126,13 +133,13 @@ describe("item", () => {
         const part = "weapon";
         const equipped = false;
 
-        await program.methods.updateItemAccount(grade, name, uri, part, equipped)
+        await itemProgram.methods.updateItemAccount(grade, name, uri, part, equipped)
             .accounts({
                 itemAccount: itemAccount.publicKey,
             })
             .rpc();
 
-        const updatedAccount = await program.account.itemAccount.fetch(itemAccount.publicKey);
+        const updatedAccount = await itemProgram.account.itemAccount.fetch(itemAccount.publicKey);
         console.log("Updated NFT ITEM Account:", updatedAccount);
         assert.strictEqual(updatedAccount.grade, grade, "Updated Grade mismatch");
         assert.strictEqual(updatedAccount.name, name, "Updated Name mismatch");
@@ -142,14 +149,14 @@ describe("item", () => {
     });
 
     it("DELETE NFT ITEM ACCOUNT TEST", async () => {
-        await program.methods.deleteItemAccount()
+        await itemProgram.methods.deleteItemAccount()
             .accounts({
                 itemAccount: itemAccount.publicKey,
             })
             .rpc();
 
         try {
-            await program.account.itemAccount.fetch(itemAccount.publicKey);
+            await itemProgram.account.itemAccount.fetch(itemAccount.publicKey);
             assert.fail("Account should be deleted");
         } catch (err) {
             console.log("NFT ITEM account successfully deleted.");
@@ -157,35 +164,13 @@ describe("item", () => {
     });
 
     ///////////////////////////////////////////////////////////////////////////
-    it("RANDOM MINT ITEM TEST", async () => {
-        // 유효한 가챠 타입: 0 ~ 5 (6개 가챠 중 하나 선택)        
-        const gachaType = 3; 
-        await program.methods.randomMintItem(gachaType)
-            .accounts({
-                owner: provider.wallet.publicKey,
-                itemAccount: itemAccount.publicKey,
-            })
-            .signers([itemAccount])
-            .rpc();
-
-        // 결과 확인: grade가 6개 등급 중 하나이고, name, uri, part 필드가 비어있지 않아야 함.        
-        const mintedItemAccount = await program.account.itemAccount.fetch(itemAccount.publicKey);
-        console.log("Random Minted Item Account:", mintedItemAccount);
-        assert.ok(validGrades.includes(mintedItemAccount.grade), "[ERROR] Invalid Grade from Random Mint Test");
-        assert.ok(validItems.map(item => item[0]).includes(mintedItemAccount.name), "[ERROR] Invalid Name");
-        assert.ok(validItems.map(item => item[1]).includes(mintedItemAccount.uri), "[ERROR] Invalid URI");
-        assert.ok(validItems.map(item => item[2]).includes(mintedItemAccount.part), "[ERROR] Invalid Part");        
-        assert.strictEqual(mintedItemAccount.equipped, false, "[ERROR] Equipped should be false by default");
-        assert.ok(mintedItemAccount.owner.equals(provider.wallet.publicKey), "[ERROR] Owner mismatch");
-    });
-
     it("READ INVENTORY ITEM ACCOUNT TEST", async () => {
         const nums = 10;
         const createdItemAccounts = [];
         for (let i = 0; i < nums; i++) {
             const itemAccount = anchor.web3.Keypair.generate();
             createdItemAccounts.push(itemAccount);
-            await program.methods.randomMintItem(i % 6)
+            await itemProgram.methods.randomMintItem(i % 6)
                 .accounts({
                     owner: provider.wallet.publicKey,
                     itemAccount: itemAccount.publicKey,
@@ -205,7 +190,7 @@ describe("item", () => {
         }];
 
         // 필터를 통해 특정 Wallet 주소가 보유한 Item NFT 목록 조회
-        const itemAccounts = await program.account.itemAccount.all(filters);
+        const itemAccounts = await itemProgram.account.itemAccount.all(filters);
         console.log("Inventory NFT Item Accounts owned by", provider.wallet.publicKey.toString(), itemAccounts);
 
         // 각 생성한 더미 NFT ITEM 계정이 필터링 결과에 포함되는지 검증
@@ -215,29 +200,157 @@ describe("item", () => {
         }
     });
 
-    // // 랜덤 NFT ITEM 민팅 테스트를 위해 새 Keypair 생성
-    // const randomItemAccount = anchor.web3.Keypair.generate();
-    // it("MINT RANDOM NFT ITEM ACCOUNT TEST", async () => {
-    //     await program.methods.randomMintItem()
-    //         .accounts({
-    //             itemAccount: randomItemAccount.publicKey,
-    //             owner: provider.wallet.publicKey,
-    //         })
-    //         .signers([randomItemAccount])
-    //         .rpc();
+    ///////////////////////////////////////////////////////////////////////////
+    it("SINGLE TYPE OF GACHA RANDOM RATE MINTING NFT ITEM TEST", async () => {
+        const gachaType = 0;
 
-    //     // 미리 정의된 값: "NFT ITEM Alpha", "NFT ITEM Beta", "NFT ITEM Gamma"
-    //     const possibleNames = ["NFT ITEM Alpha", "NFT ITEM Beta", "NFT ITEM Gamma"];
-    //     const possibleUris = [
-    //         "https://example.com/nft_alpha.json",
-    //         "https://example.com/nft_beta.json",
-    //         "https://example.com/nft_gamma.json",
-    //     ];
+        // 테스트용 Credit Account 생성
+        await creditProgram.methods.createCreditAccount(new anchor.BN(1000))
+            .accounts({
+                owner: provider.wallet.publicKey,
+            })
+            .rpc();
 
-    //     const randomAccount = await program.account.itemAccount.fetch(randomItemAccount.publicKey);
-    //     console.log("Random Minted NFT ITEM Account:", randomAccount);
-    //     assert.ok(possibleNames.includes(randomAccount.name));
-    //     assert.ok(possibleUris.includes(randomAccount.uri));
-    // });
+        // 결과 확인 1
+        const beforeGachaCreditAccount = await creditProgram.account.creditAccount.fetch(creditAccountPda);
+        console.log("Credit Account Balance Before Gacha: ", beforeGachaCreditAccount.balance.toNumber());
+
+        // 크레딧 지불 인스트럭션 생성
+        const payIx = await creditProgram.methods.decreaseCreditAccount(new anchor.BN(10 ** gachaType))
+            .accounts({
+                creditAccount: creditAccountPda,
+            })
+            .instruction();
+        
+        // 가챠 아이템 보상 인스트럭션 생성
+        const getIx = await itemProgram.methods.randomMintItem(gachaType)
+            .accounts({
+                owner: provider.wallet.publicKey,
+                itemAccount: itemAccount.publicKey,
+            })
+            .signers([itemAccount])
+            .instruction();
+        
+        // 하나의 트랜잭션에 두 인스트럭션 추가 후 트랜잭션 전송 (생성을 위해 Signer 추가)
+        const tx = new anchor.web3.Transaction(); tx.add(payIx, getIx);
+        await provider.sendAndConfirm(tx, [itemAccount]);
+
+        // 결과 확인 2: grade가 6개 등급 중 하나이고, name, uri, part 필드가 전체 아이템 목록 중에 존재해야 함.
+        const afterGachaCreditAccount = await creditProgram.account.creditAccount.fetch(creditAccountPda);
+        console.log("Credit Account Balance After Gacha: ", afterGachaCreditAccount.balance.toNumber());
+        const mintedItemAccount = await itemProgram.account.itemAccount.fetch(itemAccount.publicKey);
+        console.log("Random Minted Item Account Gacha Type {}:", gachaType, mintedItemAccount);
+        assert.ok(validGrades.includes(mintedItemAccount.grade), "[ERROR] Invalid Grade from Random Mint Test");
+        assert.ok(validItems.map(item => item[0]).includes(mintedItemAccount.name), "[ERROR] Invalid Name");
+        assert.ok(validItems.map(item => item[1]).includes(mintedItemAccount.uri), "[ERROR] Invalid URI");
+        assert.ok(validItems.map(item => item[2]).includes(mintedItemAccount.part), "[ERROR] Invalid Part");        
+        assert.strictEqual(mintedItemAccount.equipped, false, "[ERROR] Equipped should be false by default");
+        assert.ok(mintedItemAccount.owner.equals(provider.wallet.publicKey), "[ERROR] Owner mismatch");
+    });
+    
+    it("ALL TYPES OF GACHA RANDOM RATE MINTING NFT ITEM TEST", async () => {            
+        // 유효한 가챠 타입: 0 ~ 5 (6개 가챠 중 하나 선택)        
+        for (let gachaType = 0; gachaType < 6; gachaType++) {
+            // 크레딧 초기화 (10_000 크레딧)
+            await creditProgram.methods.updateCreditAccount(new anchor.BN(100000))
+            .accounts({
+                creditAccount: creditAccountPda,
+            })
+            .rpc();
+
+            // 결과 확인 1
+            const beforeGachaCreditAccount = await creditProgram.account.creditAccount.fetch(creditAccountPda);
+            console.log("Credit Account Balance Before Gacha: ", beforeGachaCreditAccount.balance.toNumber());
+
+            // 크레딧 지불 인스트럭션 생성
+            const payIx = await creditProgram.methods.decreaseCreditAccount(new anchor.BN(10 ** gachaType))
+                .accounts({
+                    creditAccount: creditAccountPda,
+                })
+                .instruction();
+            
+            // 가챠 아이템 보상 인스트럭션 생성
+            const itemAccount = anchor.web3.Keypair.generate();
+            const getIx = await itemProgram.methods.randomMintItem(gachaType)
+                .accounts({
+                    owner: provider.wallet.publicKey,
+                    itemAccount: itemAccount.publicKey,
+                })
+                .signers([itemAccount])
+                .instruction();
+            
+            // 하나의 트랜잭션에 두 인스트럭션 추가 후 트랜잭션 전송 (생성을 위해 Signer 추가)
+            const tx = new anchor.web3.Transaction(); tx.add(payIx, getIx);
+            await provider.sendAndConfirm(tx, [itemAccount]);
+
+            // 결과 확인 2: grade가 6개 등급 중 하나이고, name, uri, part 필드가 전체 아이템 목록 중에 존재해야 함.
+            const afterGachaCreditAccount = await creditProgram.account.creditAccount.fetch(creditAccountPda);
+            console.log("Credit Account Balance After Gacha: ", afterGachaCreditAccount.balance.toNumber());
+            const mintedItemAccount = await itemProgram.account.itemAccount.fetch(itemAccount.publicKey);
+            console.log("Random Minted Item Account Gacha Type {}:", gachaType, mintedItemAccount);
+            assert.ok(validGrades.includes(mintedItemAccount.grade), "[ERROR] Invalid Grade from Random Mint Test");
+            assert.ok(validItems.map(item => item[0]).includes(mintedItemAccount.name), "[ERROR] Invalid Name");
+            assert.ok(validItems.map(item => item[1]).includes(mintedItemAccount.uri), "[ERROR] Invalid URI");
+            assert.ok(validItems.map(item => item[2]).includes(mintedItemAccount.part), "[ERROR] Invalid Part");        
+            assert.strictEqual(mintedItemAccount.equipped, false, "[ERROR] Equipped should be false by default");
+            assert.ok(mintedItemAccount.owner.equals(provider.wallet.publicKey), "[ERROR] Owner mismatch");
+        }
+    });
+
+    /////////////////////////////////////////////////////////////////////////
+    it("ALL TYPES OF GACHA PROBABILITY DISTRIBUTION VALIDATE TEST", async () => {
+        const GRADE_NAMES = ["NORMAL", "RARE", "EPIC", "UNIQUE", "LEGENDARY", "DEGENDARY"];
+        const GACHA_WEIGHTS: number[][] = [
+            [60, 25, 10, 4, 1, 0],  // 가챠 0
+            [55, 25, 10, 4, 4, 2],  // 가챠 1
+            [50, 25, 10, 4, 7, 4],  // 가챠 2
+            [45, 25, 10, 4, 9, 7],  // 가챠 3
+            [40, 25, 10, 4, 9, 12], // 가챠 4
+            [35, 25, 10, 4, 9, 17], // 가챠 5
+        ];
+
+        const NUM_GACHA = 6;
+        const NUM_GRADE = 6;
+        const ITERATION = 100;
+        for (let gachaType = 0; gachaType < NUM_GACHA; gachaType++) {
+            let freq: { [grade: string]: number } = {};
+            for (const grade of GRADE_NAMES) {
+                freq[grade] = 0;
+            }
+
+            // ITERATION 만큼 민팅 실행
+            for (let i = 0; i < ITERATION; i++) {
+                // 매 반복마다 새로운 itemAccount 생성
+                const itemAccount = anchor.web3.Keypair.generate();
+                await itemProgram.methods.randomMintItem(gachaType)
+                    .accounts({
+                        itemAccount: itemAccount.publicKey,
+                        owner: provider.wallet.publicKey,
+                    })
+                    .signers([itemAccount])
+                    .rpc();
+
+                const mintedItem = await itemProgram.account.itemAccount.fetch(itemAccount.publicKey);
+                freq[mintedItem.grade] += 1;
+            }
+            console.log(`Gacha Type ${gachaType} frequency:`, freq);
+
+            // 기대 확률 계산: 가챠별 각 등급의 기대 확률 = weight / total_weight, 총합은 100
+            const weights = GACHA_WEIGHTS[gachaType];
+            const totalWeight = weights.reduce((a, b) => a + b, 0);
+            for (let gradeIndex = 0; gradeIndex < NUM_GRADE; gradeIndex++) {
+                const actualRate = freq[GRADE_NAMES[gradeIndex]] / ITERATION;
+                const expectedRate = weights[gradeIndex] / totalWeight;  // 0 ~ 1
+                console.log(`Gacha Type ${gachaType} - Grade ${GRADE_NAMES[gradeIndex]}: Actual Rate ${actualRate * 100}% vs Expected Rate ${expectedRate * 100}% (±10%)`);
+                
+                // 각 등급에 대해 실제 등장 비율과 기대 비율을 비교 (허용 오차: ±10% relative)
+                const tolerance = 0.10; // 10%
+                assert.ok(
+                    Math.abs(actualRate - expectedRate) <= tolerance,
+                    `For Gacha Type ${gachaType} Grade ${GRADE_NAMES[gradeIndex]}, Expected Probability ${expectedRate * 100}% (±10%) but got ${actualRate * 100}%`
+                );
+            }
+        }
+    });
 
 });
