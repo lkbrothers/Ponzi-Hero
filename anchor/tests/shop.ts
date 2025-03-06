@@ -16,12 +16,23 @@ describe("shop", () => {
     // 테스트용 Account Keypair
     const itemAccount = anchor.web3.Keypair.generate();
     const creditAccount = anchor.web3.Keypair.generate();
-    // const creditAccount = anchor.web3.Keypair.generate();
     let [creditAccountPda, bump] = anchor.web3.PublicKey.findProgramAddressSync(
         [Buffer.from("credit"), provider.wallet.publicKey.toBuffer()], creditProgram.programId
     );
 
     it("EXCHANGE NFT ITEM TO CREDIT TEST", async () => {
+        // 테스트용 기존 Credit Account 삭제
+        try {
+            await creditProgram.methods.deleteCreditAccount()
+            .accounts({
+                creditAccount: creditAccountPda,
+            })
+            .rpc();
+            console.log("Credit Account successfully deleted.");
+        } catch (err) {
+            console.log("Credit Account is not exists already.");
+        }
+        
         // 테스트용 Credit Account 생성
         await creditProgram.methods.createCreditAccount(new anchor.BN(0))
             .accounts({
@@ -77,30 +88,58 @@ describe("shop", () => {
             .rpc();
 
         // 테스트용 NFT Item Account 생성
-        await itemProgram.methods.randomMintItem(0)
+        // await itemProgram.methods.randomMintItem(0)
+        //     .accounts({
+        //         owner: provider.wallet.publicKey,
+        //         itemAccount: itemAccount.publicKey,
+        //     })
+        //     .signers([itemAccount])
+        //     .rpc();
+
+        // 결과 확인 1
+        const createdCreditAccount = await creditProgram.account.creditAccount.fetch(creditAccountPda);
+        // const createdItemAccount = await itemProgram.account.itemAccount.fetch(itemAccount.publicKey);
+        console.log("Created Credit Account Balance Before Exchange: ", createdCreditAccount.balance.toNumber());
+        // console.log("Created Item Account Information: ", createdItemAccount);
+
+        
+        // Credit → NFT 교환: Item Key 입력 (DEGEN_0007번 아이템, 600크레딧)
+        // 1. CREATE ITEM ACCOUNT 인스트럭션 생성
+        const initialIx = await itemProgram.methods.createItemAccount("", "", "", "", false)
             .accounts({
                 owner: provider.wallet.publicKey,
                 itemAccount: itemAccount.publicKey,
             })
             .signers([itemAccount])
-            .rpc();
-
-        // 결과 확인 1
-        const createdCreditAccount = await creditProgram.account.creditAccount.fetch(creditAccountPda);
-        const createdItemAccount = await itemProgram.account.itemAccount.fetch(itemAccount.publicKey);
-        console.log("Created Credit Account Balance Before Exchange: ", createdCreditAccount.balance.toNumber());
-        console.log("Created Item Account Information: ", createdItemAccount);
-
-        // Credit → NFT 교환: Item Key 입력 (DEGEN_0007번 아이템, 600크레딧)
-        await shopProgram.methods.exchangeCreditToItem("DEGEN_0007")
+            .instruction();
+        
+        // 2. EXCHANGE CREDIT ACCOUNT TO ITEM ACCOUNT 인스트럭션 생성
+        const exchangeIx = await shopProgram.methods.exchangeCreditToItem("DEGEN_0007")
             .accounts({
+                owner: provider.wallet.publicKey,
                 creditAccount: creditAccountPda,
                 itemAccount: itemAccount.publicKey,
                 creditProgram: creditProgram.programId,
                 itemProgram: itemProgram.programId,
             })
-            // .signers([newNftAccount])
-            .rpc();
+            .instruction();
+
+        // 3. 하나의 트랜잭션에 두 인스트럭션 추가 후 트랜잭션 전송 (생성을 위해 Signer 추가)
+        const tx = new anchor.web3.Transaction();
+        tx.add(initialIx, exchangeIx);
+        await provider.sendAndConfirm(tx, [itemAccount]);
+
+        // Credit → NFT 교환: Item Key 입력 (DEGEN_0007번 아이템, 600크레딧)
+        // await shopProgram.methods.exchangeCreditToItem("DEGEN_0007")
+        //     .accounts({
+        //         owner: provider.wallet.publicKey,
+        //         creditAccount: creditAccountPda,
+        //         itemAccount: itemAccount.publicKey,
+        //         creditProgram: creditProgram.programId,
+        //         itemProgram: itemProgram.programId,
+        //     })
+        //     .signers([itemAccount])
+        //     .rpc();
 
         // 결과 확인 2
         // CreditAccount 잔액은 1000 - 600 = 400이어야 함
