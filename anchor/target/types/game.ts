@@ -256,8 +256,12 @@ export type Game = {
             "type": "u8"
           },
           {
-            "name": "nft",
-            "type": "string"
+            "name": "seed1",
+            "type": "u64"
+          },
+          {
+            "name": "seed2",
+            "type": "u64"
           },
           {
             "name": "beforeTx",

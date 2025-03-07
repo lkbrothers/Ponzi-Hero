@@ -10,6 +10,7 @@ pub struct DBaccount {
 #[account]
 pub struct CodeAccount {
     pub bump: u8,
-    pub nft: String,
+    pub seed1: u64,
+    pub seed2: u64,
     pub before_tx: String,
 }

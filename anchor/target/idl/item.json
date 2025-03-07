@@ -110,8 +110,15 @@
           "signer": true
         },
         {
-          "name": "recent_blockhashes",
-          "address": "SysvarRecentB1ockHashes11111111111111111111"
+          "name": "db_account",
+          "writable": true
+        },
+        {
+          "name": "code_account",
+          "writable": true
+        },
+        {
+          "name": "game_program"
         },
         {
           "name": "system_program",
@@ -122,6 +129,22 @@
         {
           "name": "gacha_type",
           "type": "u8"
+        },
+        {
+          "name": "dummy_tx_hash",
+          "type": "string"
+        },
+        {
+          "name": "block_hash",
+          "type": "string"
+        },
+        {
+          "name": "slot",
+          "type": "u64"
+        },
+        {
+          "name": "block_time",
+          "type": "u64"
         }
       ]
     },
@@ -186,6 +209,32 @@
   ],
   "accounts": [
     {
+      "name": "CodeAccount",
+      "discriminator": [
+        65,
+        67,
+        94,
+        253,
+        193,
+        120,
+        172,
+        223
+      ]
+    },
+    {
+      "name": "DBaccount",
+      "discriminator": [
+        207,
+        58,
+        197,
+        98,
+        85,
+        208,
+        80,
+        178
+      ]
+    },
+    {
       "name": "ItemAccount",
       "discriminator": [
         203,
@@ -212,6 +261,50 @@
     }
   ],
   "types": [
+    {
+      "name": "CodeAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "seed1",
+            "type": "u64"
+          },
+          {
+            "name": "seed2",
+            "type": "u64"
+          },
+          {
+            "name": "before_tx",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DBaccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "tail_tx",
+            "type": "string"
+          },
+          {
+            "name": "counter",
+            "type": "u64"
+          }
+        ]
+      }
+    },
     {
       "name": "ItemAccount",
       "type": {

@@ -1,5 +1,8 @@
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program::hash::{Hash, hash};
+// use anchor_lang::solana_program::hash::{Hash, hash};
+
+use game::cpi::{accounts::FinalizeGame, finalize_game};
+
 
 declare_id!("A3iwuQp9UcJsxcxXJ9ZWWLv5B616srHw8fCGkEeWgLjN");
 
@@ -98,29 +101,29 @@ pub const DEGENDARY_ITEMS: [(&str, &str, &str); NUM_IMAGES] = [
     ("Degendary Item Name 0010", "degendary0010.png", "accessory"),
 ];
 
-pub fn generate_seed(ctx: &Context<RandomMintItem>) -> Result<u64> {
-    // 여러 엔트로피 요소 결합 후 SHA256 적용
-    let slot = Clock::get()?.slot;
-    let timestamp = Clock::get()?.unix_timestamp as u64;
-    let owner_bytes = ctx.accounts.owner.key().to_bytes();
-    let recent_block_hash = ctx.accounts.recent_blockhashes.data.borrow();
-    // msg!("FUNCTION CALLED GENERATE_SEED() SLOT VALUE: {}", slot);
-    // msg!("FUNCTION CALLED GENERATE_SEED() TIMESTAMP VALUE: {}", timestamp);
-    // msg!("FUNCTION CALLED GENERATE_SEED() OWNER BYTES VALUE: {:?}", owner_bytes);
-    // msg!("FUNCTION CALLED GENERATE_SEED() RECENT_BLOCK_HASH VALUE: {:?}", recent_block_hash);
+// pub fn generate_seed(ctx: &Context<RandomMintItem>) -> Result<u64> {
+//     // 여러 엔트로피 요소 결합 후 SHA256 적용
+//     let slot = Clock::get()?.slot;
+//     let timestamp = Clock::get()?.unix_timestamp as u64;
+//     let owner_bytes = ctx.accounts.owner.key().to_bytes();
+//     let recent_block_hash = ctx.accounts.recent_blockhashes.data.borrow();
+//     // msg!("FUNCTION CALLED GENERATE_SEED() SLOT VALUE: {}", slot);
+//     // msg!("FUNCTION CALLED GENERATE_SEED() TIMESTAMP VALUE: {}", timestamp);
+//     // msg!("FUNCTION CALLED GENERATE_SEED() OWNER BYTES VALUE: {:?}", owner_bytes);
+//     // msg!("FUNCTION CALLED GENERATE_SEED() RECENT_BLOCK_HASH VALUE: {:?}", recent_block_hash);
 
-    // 각 요소를 바이트 배열로 변환하여 결합
-    let mut entropy = Vec::new();
-    entropy.extend_from_slice(&owner_bytes);
-    entropy.extend_from_slice(&slot.to_le_bytes());
-    entropy.extend_from_slice(&timestamp.to_le_bytes());
-    entropy.extend_from_slice(&recent_block_hash[0..32]);
+//     // 각 요소를 바이트 배열로 변환하여 결합
+//     let mut entropy = Vec::new();
+//     entropy.extend_from_slice(&owner_bytes);
+//     entropy.extend_from_slice(&slot.to_le_bytes());
+//     entropy.extend_from_slice(&timestamp.to_le_bytes());
+//     entropy.extend_from_slice(&recent_block_hash[0..32]);
 
-    // 여러 요소를 결합한 바이트 배열에 SHA256 해시 적용
-    let result: Hash = hash(&entropy);
-    let seed_bytes: [u8; 8] = result.as_ref()[0..8].try_into().unwrap();
-    Ok(u64::from_le_bytes(seed_bytes))
-}
+//     // 여러 요소를 결합한 바이트 배열에 SHA256 해시 적용
+//     let result: Hash = hash(&entropy);
+//     let seed_bytes: [u8; 8] = result.as_ref()[0..8].try_into().unwrap();
+//     Ok(u64::from_le_bytes(seed_bytes))
+// }
 
 #[program]
 pub mod item {
@@ -158,7 +161,14 @@ pub mod item {
     
     ///////////////////////////////////////////////////////////////////////////
     // RANDOM MINT ITEM ACCOUNT
-    pub fn random_mint_item(ctx: Context<RandomMintItem>, gacha_type: u8) -> Result<()> {
+    pub fn random_mint_item(
+        ctx: Context<RandomMintItem>,
+        gacha_type: u8,
+        dummy_tx_hash: String,
+        block_hash: String,
+        slot: u64,
+        block_time: u64
+    ) -> Result<()> {
         if (gacha_type as usize) >= NUM_GACHA {
             return Err(ErrorCode::InvalidGachaType.into());
         }
@@ -166,7 +176,31 @@ pub mod item {
         let weights = GACHA_WEIGHTS[gacha_type as usize];
         let total_weight: u64 = weights.iter().sum();
 
-        let seed1 = generate_seed(&ctx)?;
+        let finalize_game_ctx = CpiContext::new(
+            ctx.accounts.game_program.to_account_info(),
+            FinalizeGame {
+                user: ctx.accounts.owner.to_account_info(),
+                db_account: ctx.accounts.db_account.to_account_info(),
+                code_account: ctx.accounts.code_account.to_account_info(),
+                system_program: ctx.accounts.system_program.to_account_info(),
+            },
+        );
+        finalize_game(
+            finalize_game_ctx, 
+            dummy_tx_hash, 
+            block_hash, 
+            slot, 
+            block_time
+        )?;
+    
+        // 반환된 struct의 data 필드에서 seed1, seed2 추출
+        let seed1 = ctx.accounts.code_account.seed1;
+        let seed2 = ctx.accounts.code_account.seed2;
+
+        msg!("COMBINED SEED 1 FOR CHOOSING GACHA: {}", seed1);
+        msg!("COMBINED SEED 2 FOR CHOOSING IMAGE: {}", seed2);
+
+        // let seed1 = generate_seed(&ctx)?;
         let value = seed1 % total_weight;
 
         // 아이템별 확률 분포 적용
@@ -209,8 +243,7 @@ pub mod item {
             _ => return Err(ErrorCode::InvalidItemGrade.into()),
         };
 
-        // seed값 사실상 변화 없음, 추후 수정 필요
-        let seed2 = generate_seed(&ctx)?;
+        // let seed2 = generate_seed(&ctx)?;
         let item_index = (seed2 % items.len() as u64) as usize;
 
         let (name, uri, part) = items[item_index];
@@ -291,10 +324,28 @@ pub struct RandomMintItem<'info> {
     #[account(init, payer = owner, space = 8 + 32 + (4 + 20) + (4 + 20) + (4 + 20) + (4 + 20) + 1)]
     pub item_account: Account<'info, ItemAccount>,
     /// CHECK: Recent blockhashes sysvar account
-    #[account(address = anchor_lang::solana_program::sysvar::recent_blockhashes::ID)]
-    pub recent_blockhashes: AccountInfo<'info>,
+    // #[account(address = anchor_lang::solana_program::sysvar::recent_blockhashes::ID)]
+    // pub recent_blockhashes: AccountInfo<'info>,
+
+    #[account(mut)]
+    pub db_account: Account<'info, game::state::DBaccount>,
+    #[account(mut)]
+    pub code_account: Account<'info, game::state::CodeAccount>,
+    /// CHECK: Game program account
+    pub game_program: AccountInfo<'info>,
     pub system_program: Program<'info, System>,
 }
+
+// #[derive(Accounts)]
+// pub struct FinalizeGameForItem<'info> {
+//     #[account(mut)]
+//     pub user: Signer<'info>,
+//     #[account(mut)]
+//     pub db_account: Account<'info, game::state::DBaccount>,
+//     #[account(mut)]
+//     pub code_account: Account<'info, game::state::CodeAccount>,
+//     pub system_program: Program<'info, System>,
+// }
 
 #[account]
 pub struct ItemAccount {

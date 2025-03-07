@@ -166,14 +166,18 @@ describe("item", () => {
     ///////////////////////////////////////////////////////////////////////////
     it("READ INVENTORY ITEM ACCOUNT TEST", async () => {
         const nums = 10;
-        const createdItemAccounts = [];
+        const createdItemAccounts: anchor.web3.Keypair[] = [];
         for (let i = 0; i < nums; i++) {
             const itemAccount = anchor.web3.Keypair.generate();
             createdItemAccounts.push(itemAccount);
-            await itemProgram.methods.randomMintItem(i % 6)
+            await itemProgram.methods.randomMintItem(i % 6, "dummy_tx_hash", "block_hash", new anchor.BN(12345), new anchor.BN(67890))
                 .accounts({
                     owner: provider.wallet.publicKey,
                     itemAccount: itemAccount.publicKey,
+                    // 아래 계정들은 테스트 목적으로 wallet의 publicKey를 dummy 값으로 사용합니다.
+                    dbAccount: provider.wallet.publicKey,
+                    codeAccount: provider.wallet.publicKey,
+                    gameProgram: provider.wallet.publicKey,
                 })
                 .signers([itemAccount])
                 .rpc();
@@ -223,10 +227,14 @@ describe("item", () => {
             .instruction();
         
         // 가챠 아이템 보상 인스트럭션 생성
-        const getIx = await itemProgram.methods.randomMintItem(gachaType)
+        const getIx = await itemProgram.methods.randomMintItem(6, "dummy_tx_hash", "block_hash", new anchor.BN(12345), new anchor.BN(67890))
             .accounts({
                 owner: provider.wallet.publicKey,
                 itemAccount: itemAccount.publicKey,
+                // 아래 계정들은 테스트 목적으로 wallet의 publicKey를 dummy 값으로 사용합니다.
+                dbAccount: provider.wallet.publicKey,
+                codeAccount: provider.wallet.publicKey,
+                gameProgram: provider.wallet.publicKey,
             })
             .signers([itemAccount])
             .instruction();
@@ -271,10 +279,14 @@ describe("item", () => {
             
             // 가챠 아이템 보상 인스트럭션 생성
             const itemAccount = anchor.web3.Keypair.generate();
-            const getIx = await itemProgram.methods.randomMintItem(gachaType)
+            const getIx = await itemProgram.methods.randomMintItem(6, "dummy_tx_hash", "block_hash", new anchor.BN(12345), new anchor.BN(67890))
                 .accounts({
                     owner: provider.wallet.publicKey,
                     itemAccount: itemAccount.publicKey,
+                    // 아래 계정들은 테스트 목적으로 wallet의 publicKey를 dummy 값으로 사용합니다.
+                    dbAccount: provider.wallet.publicKey,
+                    codeAccount: provider.wallet.publicKey,
+                    gameProgram: provider.wallet.publicKey,
                 })
                 .signers([itemAccount])
                 .instruction();
@@ -322,10 +334,14 @@ describe("item", () => {
             for (let i = 0; i < ITERATION; i++) {
                 // 매 반복마다 새로운 itemAccount 생성
                 const itemAccount = anchor.web3.Keypair.generate();
-                await itemProgram.methods.randomMintItem(gachaType)
+                await itemProgram.methods.randomMintItem(i % 6, "dummy_tx_hash", "block_hash", new anchor.BN(12345), new anchor.BN(67890))
                     .accounts({
-                        itemAccount: itemAccount.publicKey,
                         owner: provider.wallet.publicKey,
+                        itemAccount: itemAccount.publicKey,
+                        // 아래 계정들은 테스트 목적으로 wallet의 publicKey를 dummy 값으로 사용합니다.
+                        dbAccount: provider.wallet.publicKey,
+                        codeAccount: provider.wallet.publicKey,
+                        gameProgram: provider.wallet.publicKey,
                     })
                     .signers([itemAccount])
                     .rpc();
