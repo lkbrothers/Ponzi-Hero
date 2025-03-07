@@ -12,7 +12,6 @@ import { GRADE_NAMES, VALID_IMAGES, NUM_GACHA } from './gacha-data-access'
 import confetti from 'canvas-confetti'
 
 import gachaImg from '../../assets/gachaBtnNoBg.png'
-import gachaPushedImg from '../../assets/gachaBtnPushedNoBg.png'
 import nftimg from '../../assets/nft.png'
 import nftimg2 from '../../assets/nft2.png'
 import nftimg3 from '../../assets/nft3.png'
@@ -69,7 +68,7 @@ function GachaResultModal({ nft, onClose, onRetry }: { nft: any, onClose: () => 
 
 export function GachaCreate() {
 
-    const { connected } = useWallet()
+    const { connected, publicKey } = useWallet()
     const [showModal, setShowModal] = useState(false)
     const [gachaResult, setGachaResult] = useState<any>(null)
     const [selectedGachaLevel, setSelectedGachaLevel] = useState(0)
@@ -86,68 +85,115 @@ export function GachaCreate() {
 
     const { fetchBlockInfo } = useGameProgram();
 
+    const {
+      remitForRandomMutation,
+      fetchCodeAccount
+  } = useGameProgramDBAccount({ userPublicKey: publicKey!, dbAccount });
+
     // 가챠 비용 설정
     const gachaCosts = [500, 1000, 1500, 2000, 2500, 3000]
 
-
-
-
-  const handleGachaClick = async () => {
-    if (connected) {
+    // 송금 버튼 핸들러
+    const handleRemit = async () => {
       try {
-        // 크레딧으로 가챠 뽑기
-        const result = await drawGacha.mutateAsync({ 
-          gachaLevel: selectedGachaLevel,
-          cost: gachaCosts[selectedGachaLevel]
-        })
-        
-        // 민팅된 아이템 정보로 결과 설정
-        const mintedItem = result.mintedItemAccount
-        let gradeIndex = 0
-        const grade = mintedItem.grade
-        switch(grade){
-          case 'NORMAL':
-            gradeIndex = 0
-            break
-          case 'RARE':
-            gradeIndex = 1
-            break
-          case 'EPIC':
-            gradeIndex = 2
-            break
-          case 'UNIQUE':
-            gradeIndex = 3
-            break
-          case 'LEGENDARY':
-            gradeIndex = 4
-            break
-          case 'DEGENDARY':
-            gradeIndex = 5
-            break
-        }
-        
-        const nftResult = {
-          name: `${GRADE_NAMES[gradeIndex]}}`,
-          image: mintedItem.image,
-          description: '가챠에서 획득한 아이템입니다.',
-          grade: gradeIndex,
-          mint: result.itemAccount.publicKey.toString()
-        }
-        setGachaResult(nftResult)
-        setShowModal(true)
-        
-        // 색종이 효과 추가
-        confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { y: 0.6 }
-        })
+          // 1. remitForRandom 실행 → dummyTx 획득
+          const dummyTxHash = await remitForRandomMutation.mutateAsync();
+          toast.success(`송금 성공: ${dummyTxHash}`);
+          setDummyTx(dummyTxHash);
+          const codeAccountAfterDummyTx = await fetchCodeAccount(dummyTxHash);
+          setCodeAccount(codeAccountAfterDummyTx);
       } catch (error) {
-        toast.error('가챠 뽑기에 실패했습니다. 크레딧이 부족할 수 있습니다.')
-        console.error(error)
+          console.error(error);
+          toast.error("송금에 실패했습니다.");
       }
+  };
+
+  useEffect(() => {
+    handleGachaClick()
+  }, [codeAccount])
+
+    const handleGachaClick = async () => {
+        if(!connected) {
+            toast.error("지갑을 연결해주세요.")
+            return
+        }
+        // try {
+        //     await handleRemit()
+        // } catch (error) {
+        //     console.error(error);
+        //     toast.error("송금에 실패했습니다.");
+        // }
+
+        if (connected) {
+            try {
+
+                if (!dummyTx || !dbAccount || !codeAccount) {
+                    throw new Error("dummyTx || dbAccount || codeAccount is null");
+                }
+
+                const { blockHash, slot, blockTime } = await fetchBlockInfo(dummyTx);
+
+                console.log("dbAccount = ", dbAccount)
+
+                // 크레딧으로 가챠 뽑기
+                const result = await drawGacha.mutateAsync({
+                    gachaLevel: selectedGachaLevel,
+                    cost: gachaCosts[selectedGachaLevel],
+                    dbAccount: dbAccount,
+                    codeAccount: codeAccount,
+                    dummyTxHash: dummyTx,
+                    blockHash,
+                    slot,
+                    blockTime: blockTime ?? 0
+                })
+
+                // 민팅된 아이템 정보로 결과 설정
+                const mintedItem = result.mintedItemAccount
+                let gradeIndex = 0
+                const grade = mintedItem.grade
+                switch (grade) {
+                    case 'NORMAL':
+                        gradeIndex = 0
+                        break
+                    case 'RARE':
+                        gradeIndex = 1
+                        break
+                    case 'EPIC':
+                        gradeIndex = 2
+                        break
+                    case 'UNIQUE':
+                        gradeIndex = 3
+                        break
+                    case 'LEGENDARY':
+                        gradeIndex = 4
+                        break
+                    case 'DEGENDARY':
+                        gradeIndex = 5
+                        break
+                }
+
+                const nftResult = {
+                    name: `${GRADE_NAMES[gradeIndex]}}`,
+                    image: mintedItem.uri,
+                    description: '가챠에서 획득한 아이템입니다.',
+                    grade: gradeIndex,
+                    mint: result.itemAccount.publicKey.toString()
+                }
+                setGachaResult(nftResult)
+                setShowModal(true)
+
+                // 색종이 효과 추가
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                })
+            } catch (error) {
+                toast.error('가챠 뽑기에 실패했습니다. 크레딧이 부족할 수 있습니다.')
+                console.error(error)
+            }
+        }
     }
-  }
 
     const handleRetry = () => {
         handleGachaClick()
@@ -158,31 +204,32 @@ export function GachaCreate() {
         setGachaResult(null)
     }
 
-  return (
-    <>
-      <div className={`flex flex-col w-full items-center justify-${isInventory ? 'between' : 'end'}`}>
-        <MainContent 
-          isGacha={isGacha} 
-          isInventory={isInventory} 
-          isRanking={isRanking} 
-          handleGachaClick={handleGachaClick} 
-          connected={connected} 
-          mintItem={mintItem}
-          showModal={showModal}
-          gachaResult={gachaResult}
-          dbAccount={dbAccount}
-          creditAccount={creditAccount}
-          onClose={handleClose}
-          onRetry={handleRetry}
-          setDbAccount={setDbAccount}
-          setCreditAccount={setCreditAccount}
-        />
-        <LeftMenu isGacha={isGacha} isInventory={isInventory} isRanking={isRanking} setIsGacha={setIsGacha} setIsInventory={setIsInventory} setIsRanking={setIsRanking} connected={connected} mintItem={mintItem} handleGachaClick={handleGachaClick} setGachaResult={setGachaResult}/>
-      </div>
-      
-      {/* 모달 코드 제거 */}
-    </>
-  )
+    return (
+        <>
+            <div className={`flex flex-col w-full items-center justify-${isInventory ? 'between' : 'end'}`}>
+                <MainContent
+                    isGacha={isGacha}
+                    isInventory={isInventory}
+                    isRanking={isRanking}
+                    handleRemit={handleRemit}
+                    connected={connected}
+                    showModal={showModal}
+                    gachaResult={gachaResult}
+                    dbAccount={dbAccount}
+                    creditAccount={creditAccount}
+                    onClose={handleClose}
+                    onRetry={handleRetry}
+                    setDbAccount={setDbAccount}
+                    setCreditAccount={setCreditAccount}
+                    setCodeAccount={setCodeAccount}
+                    setDummyTx={setDummyTx}
+                />
+                <LeftMenu isGacha={isGacha} isInventory={isInventory} isRanking={isRanking} setIsGacha={setIsGacha} setIsInventory={setIsInventory} setIsRanking={setIsRanking} connected={connected} handleRemit={handleRemit} setGachaResult={setGachaResult} />
+            </div>
+
+            {/* 모달 코드 제거 */}
+        </>
+    )
 }
 
 // export function GachaList() {
@@ -252,10 +299,10 @@ export function GachaCreate() {
 //     )
 // }
 
-const LeftMenu = ({isGacha, isInventory, isRanking, setIsGacha, setIsInventory, setIsRanking, connected, mintItem, handleGachaClick, setGachaResult}: {isGacha: boolean, isInventory: boolean, isRanking: boolean, setIsGacha: (isGacha: boolean) => void, setIsInventory: (isInventory: boolean) => void, setIsRanking: (isRanking: boolean) => void, connected: boolean, mintItem: any, handleGachaClick: () => void, setGachaResult: (gachaResult: any ) => void}) => {
-  return (
-    <div className="flex flex-row w-full h-[25vh] items-center justify-around gap-10">
-    {/* {Array.from({ length: NUM_GACHA }).map((_, index) => (
+const LeftMenu = ({ isGacha, isInventory, isRanking, setIsGacha, setIsInventory, setIsRanking, connected, handleRemit, setGachaResult }: { isGacha: boolean, isInventory: boolean, isRanking: boolean, setIsGacha: (isGacha: boolean) => void, setIsInventory: (isInventory: boolean) => void, setIsRanking: (isRanking: boolean) => void, connected: boolean, handleRemit: () => void, setGachaResult: (gachaResult: any) => void }) => {
+    return (
+        <div className="flex flex-row w-full h-[25vh] items-center justify-around gap-10">
+            {/* {Array.from({ length: NUM_GACHA }).map((_, index) => (
       <button 
         key={index}
         className={`btn ${selectedGachaLevel === index ? 'btn-primary' : 'btn-outline'}`}
@@ -264,30 +311,30 @@ const LeftMenu = ({isGacha, isInventory, isRanking, setIsGacha, setIsInventory, 
         레벨 {index + 1}
       </button>
     ))} */}
-    {isGacha && (
-      <>
-        <button className="btn btn-ghost w-32 h-28 pixel-shake">
-          <img src={inventoryImg.src} alt="nft" className=" object-cover" onClick={() => {setIsGacha(false); setIsInventory(true); setIsRanking(false);setGachaResult(null)}} />
-        </button>
-        <div className="relative w-1/3 h-full flex justify-center items-end">
-          <button
-            className="text-2xl w-1/2 flex justify-center items-end font-bold"
-            disabled={!connected || mintItem.isPending}
-            onClick={handleGachaClick}
-          >
-            {connected ? 
+            {isGacha && (
+                <>
+                    <button className="btn btn-ghost w-32 h-28 pixel-shake">
+                        <img src={inventoryImg.src} alt="nft" className=" object-cover" onClick={() => { setIsGacha(false); setIsInventory(true); setIsRanking(false); setGachaResult(null) }} />
+                    </button>
+                    <div className="relative w-1/3 h-full flex justify-center items-end">
+                        <button
+                            className="text-2xl w-1/2 flex justify-center items-end font-bold"
+                            disabled={!connected}
+                            onClick={handleRemit}
+                        >
+                            {connected ?
 
-                <img src={gachaImg.src} alt="gacha" className="w-full object-cover" />
-              : '지갑을 연결해주세요'}
-          </button>
-        </div>
-      </>
-    )}
-    {isInventory && (
-      <button className="w-32 h-28 pixel-shake">
-        <img src={gachaImg.src} alt="nft" className=" object-cover" onClick={() => {setIsGacha(true); setIsInventory(false); setIsRanking(false)}} />
-      </button>
-    )}
+                                <img src={gachaImg.src} alt="gacha" className="w-full object-cover" />
+                                : '지갑을 연결해주세요'}
+                        </button>
+                    </div>
+                </>
+            )}
+            {isInventory && (
+                <button className="w-32 h-28 pixel-shake">
+                    <img src={gachaImg.src} alt="nft" className=" object-cover" onClick={() => { setIsGacha(true); setIsInventory(false); setIsRanking(false) }} />
+                </button>
+            )}
 
             <button className=" w-32 h-28 pixel-shake">
                 <img src={rankingImg.src} alt="nft" className=" object-cover" />
@@ -297,11 +344,11 @@ const LeftMenu = ({isGacha, isInventory, isRanking, setIsGacha, setIsInventory, 
     )
 }
 
-const MainContent = ({ isGacha, isInventory, isRanking, handleGachaClick, connected, showModal, gachaResult, onClose, onRetry, dbAccount, creditAccount, setDbAccount, setCreditAccount, setCodeAccount, setDummyTx }: {
+const MainContent = ({ isGacha, isInventory, isRanking, handleRemit: parentHandleRemit, connected, showModal, gachaResult, onClose, onRetry, dbAccount, creditAccount, setDbAccount, setCreditAccount, setCodeAccount, setDummyTx }: {
     isGacha: boolean,
     isInventory: boolean,
     isRanking: boolean,
-    handleGachaClick: () => void,
+    handleRemit: () => void,
     connected: boolean,
     showModal?: boolean,
     gachaResult?: any,
@@ -423,8 +470,8 @@ const MainContent = ({ isGacha, isInventory, isRanking, handleGachaClick, connec
     } = useGameProgramDBAccount({ userPublicKey: publicKey!, dbAccount });
 
 
-    // 송금 버튼 핸들러
-    const handleRemit = async () => {
+    // 함수 이름 변경
+    const handleRemitLocal = async () => {
         try {
             // 1. remitForRandom 실행 → dummyTx 획득
             const dummyTxHash = await remitForRandomMutation.mutateAsync();
@@ -506,7 +553,7 @@ const MainContent = ({ isGacha, isInventory, isRanking, handleGachaClick, connec
                                     >
                                         1000 크레딧 충전
                                     </button>
-                                    <button className="btn btn-secondary" onClick={handleRemit}>
+                                    <button className="btn btn-secondary" onClick={handleRemitLocal}>
                                         송금
                                     </button>
                                 </div>

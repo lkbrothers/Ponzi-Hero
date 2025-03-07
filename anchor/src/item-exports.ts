@@ -19,9 +19,10 @@ export function getItemProgram(provider: AnchorProvider, address?: PublicKey) {
 export function getItemProgramId(cluster: Cluster) {
   switch (cluster) {
     case 'devnet':
+        return new PublicKey('4M2MAXqYYw9Qwek5WwzttegotU4sajWQrcmEfx8LZfga')
     case 'testnet':
       // This is the program ID for the Item program on devnet and testnet.
-      return new PublicKey('37Z9j1LjgPRHLnB3S3cTL7t4mCSsnWmrtUJj5u9eSBQi')
+    //   return new PublicKey('37Z9j1LjgPRHLnB3S3cTL7t4mCSsnWmrtUJj5u9eSBQi')
     case 'mainnet-beta':
     default:
       return ITEM_PROGRAM_ID

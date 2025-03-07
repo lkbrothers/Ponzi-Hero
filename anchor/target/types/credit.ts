@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/credit.json`.
  */
 export type Credit = {
-  "address": "B2bJBFBn3swvZz5YrtuuPmXZTbUpddBS3AaPc2WiYxg8",
+  "address": "AuWH2cCt8bxjRCwiF7eqp81dwxyZvVWspV7ip5SiDkbq",
   "metadata": {
     "name": "credit",
     "version": "0.1.0",

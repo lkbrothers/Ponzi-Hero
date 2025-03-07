@@ -4,7 +4,8 @@ use anchor_lang::prelude::*;
 use game::cpi::{accounts::FinalizeGame, finalize_game};
 
 
-declare_id!("A3iwuQp9UcJsxcxXJ9ZWWLv5B616srHw8fCGkEeWgLjN");
+// declare_id!("A3iwuQp9UcJsxcxXJ9ZWWLv5B616srHw8fCGkEeWgLjN");
+declare_id!("4M2MAXqYYw9Qwek5WwzttegotU4sajWQrcmEfx8LZfga");
 
 pub const NUM_GACHA: usize = 6;
 pub const NUM_GRADE: usize = 6;

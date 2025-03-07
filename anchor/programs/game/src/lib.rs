@@ -11,7 +11,8 @@ pub mod error;
 use crate::context::*;
 use crate::error::ErrorCode;
 
-declare_id!("37Z9j1LjgPRHLnB3S3cTL7t4mCSsnWmrtUJj5u9eSBQi");
+// declare_id!("37Z9j1LjgPRHLnB3S3cTL7t4mCSsnWmrtUJj5u9eSBQi");
+declare_id!("65vAJ9srf4w7ifZURDhp1GvnLADpwM5CepQPd29A87JF");
 
 #[program]
 pub mod game {

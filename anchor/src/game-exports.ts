@@ -19,9 +19,10 @@ export function getGameProgram(provider: AnchorProvider, address?: PublicKey) {
 export function getGameProgramId(cluster: Cluster) {
   switch (cluster) {
     case 'devnet':
+      return new PublicKey('65vAJ9srf4w7ifZURDhp1GvnLADpwM5CepQPd29A87JF')
     case 'testnet':
       // This is the program ID for the Counter program on devnet and testnet.
-      return new PublicKey('37Z9j1LjgPRHLnB3S3cTL7t4mCSsnWmrtUJj5u9eSBQi')
+      // return new PublicKey('37Z9j1LjgPRHLnB3S3cTL7t4mCSsnWmrtUJj5u9eSBQi')
     case 'mainnet-beta':
     default:
       return GAME_PROGRAM_ID

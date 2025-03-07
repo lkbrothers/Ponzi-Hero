@@ -19,9 +19,10 @@ export function getCreditProgram(provider: AnchorProvider, address?: PublicKey) 
 export function getCreditProgramId(cluster: Cluster) {
   switch (cluster) {
     case 'devnet':
+        return new PublicKey('AuWH2cCt8bxjRCwiF7eqp81dwxyZvVWspV7ip5SiDkbq')
     case 'testnet':
       // This is the program ID for the Credit program on devnet and testnet.
-      return new PublicKey('B2bJBFBn3swvZz5YrtuuPmXZTbUpddBS3AaPc2WiYxg8')
+      // return new PublicKey('B2bJBFBn3swvZz5YrtuuPmXZTbUpddBS3AaPc2WiYxg8')
     case 'mainnet-beta':
     default:
       return CREDIT_PROGRAM_ID

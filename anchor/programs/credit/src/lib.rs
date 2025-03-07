@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 
-declare_id!("B2bJBFBn3swvZz5YrtuuPmXZTbUpddBS3AaPc2WiYxg8");
-
+// declare_id!("B2bJBFBn3swvZz5YrtuuPmXZTbUpddBS3AaPc2WiYxg8");
+declare_id!("AuWH2cCt8bxjRCwiF7eqp81dwxyZvVWspV7ip5SiDkbq");
 #[program]
 pub mod credit {
     use super::*;
