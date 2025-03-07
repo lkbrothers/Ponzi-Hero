@@ -30,10 +30,11 @@ export default function Page() {
   useEffect(() => {
     if (!connected || !publicKey) return
 
+
     const fetchWalletData = async () => {
-      // SOL 잔액 조회
-      const bal = await connection.getBalance(publicKey)
-      setBalance(bal / LAMPORTS_PER_SOL)
+      // // SOL 잔액 조회
+      // const bal = await connection.getBalance(publicKey)
+      // setBalance(bal / LAMPORTS_PER_SOL)
 
       // 토큰 계정 조회
       const tokenAccounts = await connection.getParsedTokenAccountsByOwner(publicKey, {
