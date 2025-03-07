@@ -32,28 +32,81 @@ export default function Page() {
   useEffect(() => {
     if (!connected || !publicKey) return
 
-
     const fetchWalletData = async () => {
-      // // SOL 잔액 조회
-      // const bal = await connection.getBalance(publicKey)
-      // setBalance(bal / LAMPORTS_PER_SOL)
-
-      // 토큰 계정 조회
       const tokenAccounts = await connection.getParsedTokenAccountsByOwner(publicKey, {
         programId: new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')
       })
 
       setTokens(tokenAccounts.value)
 
-      // 개발 환경에서는 더미 NFT 데이터 사용
       const userItems = await fetchUserItems();
       console.log("userItems", userItems);
       setNfts(userItems);
-      //setNfts(DUMMY_NFTS)
     }
 
     fetchWalletData()
   }, [connected, publicKey, connection])
+
+  // 장착된 아이템 로드를 위한 새로운 useEffect 추가
+  useEffect(() => {
+    const loadEquippedItems = () => {
+      let equippedItemsMap = new Map();
+      let result = {
+        Head: null,
+        Body: null,
+        'L-Hand': null, 
+        'R-Hand': null
+      };
+
+      // 장착된 아이템 먼저 처리
+      nfts.forEach((nft) => {
+        if (nft.account.equipped) {
+          const part = nft.account.part.toLowerCase();
+          
+          if (part === 'head' && !result.Head) {
+            result.Head = nft;
+            equippedItemsMap.set(nft.publicKey.toString(), true);
+          } else if (part === 'body' && !result.Body) {
+            result.Body = nft;
+            equippedItemsMap.set(nft.publicKey.toString(), true);
+          } else if (part === 'arms') {
+            if (!result['L-Hand']) {
+              result['L-Hand'] = nft;
+              equippedItemsMap.set(nft.publicKey.toString(), true);
+            } else if (!result['R-Hand']) {
+              result['R-Hand'] = nft;
+              equippedItemsMap.set(nft.publicKey.toString(), true);
+            }
+          }
+        }
+      });
+
+      // 맵에 없는 장착된 아이템 처리
+      nfts.forEach((nft) => {
+        if (nft.account.equipped && !equippedItemsMap.has(nft.publicKey.toString())) {
+          const part = nft.account.part.toLowerCase();
+          
+          if (part === 'head' && !result.Head) {
+            result.Head = nft;
+          } else if (part === 'body' && !result.Body) {
+            result.Body = nft;
+          } else if (part === 'arms') {
+            if (!result['L-Hand']) {
+              result['L-Hand'] = nft;
+            } else if (!result['R-Hand']) {
+              result['R-Hand'] = nft;
+            }
+          }
+        }
+      });
+
+      return result;
+    }
+
+    const loadedEquippedItems = loadEquippedItems();
+    console.log("loadedEquippedItems = ", loadedEquippedItems)
+    setEquippedItems(loadedEquippedItems);
+  }, [nfts]);
 
   if (!connected) {
     return (

@@ -13,9 +13,10 @@ import uniqueFrame from '../../../assets/frame/unique.png'
 import legendaryFrame from '../../../assets/frame/legen.png'
 import degendaryFrame from '../../../assets/frame/degen.png'
 
-export function Inventory({ tokens, nfts, equippedItems, setEquippedItems }: { 
+export function Inventory({ tokens, nfts,setNfts, equippedItems, setEquippedItems }: { 
     tokens: any[], 
     nfts: any[], 
+    setNfts: (nfts: any[]) => void,
     equippedItems: {[key:string]: any},
     setEquippedItems: (items: {[key:string]: any}) => void 
 }) {
@@ -105,6 +106,8 @@ export function Inventory({ tokens, nfts, equippedItems, setEquippedItems }: {
         fetchNftMetadata();
     }, [nfts]);
 
+
+
     return (
         <div className="flex flex-col items-center gap-8 w-1/2 h-full">
             <div className="flex flex-col items-center gap-2 w-full">
@@ -141,7 +144,7 @@ export function Inventory({ tokens, nfts, equippedItems, setEquippedItems }: {
                                 <div className="w-full h-full bg-gray-100 flex items-center justify-center">
                                 </div>
                             )}
-                            {nft && isEquipped(nft) && (
+                            {nft && nft.account.equipped && (
                                 <div className="absolute top-0 right-0 bg-yellow-400 text-xs px-1">장착</div>
                             )}
                         </div>
@@ -182,6 +185,7 @@ export function Inventory({ tokens, nfts, equippedItems, setEquippedItems }: {
                     setShowClickDetail={setShowClickDetail}
                     equippedItems={equippedItems}
                     setEquippedItems={setEquippedItems}
+                    setNfts={setNfts}
                 />
             )}
         </div>

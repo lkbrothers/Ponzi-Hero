@@ -26,47 +26,53 @@ export function SelectedNftInteraction({
     const { updateEquipItem } = useInventoryItems();
     
     // 컴포넌트 마운트 시와 nfts가 변경될 때 실행
-    const loadEquippedItems = () => {
-        let loadEquippedItems = {
-            head: nfts.find((nft) => nft.account.equipped && nft.account.part === 'head'),
-            "L-Hand": nfts.find((nft) => nft.account.equipped && nft.account.part === 'arms'),
-            "R-Hand": nfts.find((nft) => nft.account.equipped && nft.account.part === 'arms'),
-            body: nfts.find((nft) => nft.account.equipped && nft.account.part === 'body'),
-        }
-        return loadEquippedItems;
-    }
-    useEffect(() => {
-        const loadedEquippedItems = loadEquippedItems();
-        setEquippedItems(loadedEquippedItems);
-    }, [nfts]); // nfts가 변경될 때마다 실행
+    
+    // useEffect(() => {
+    //     const loadedEquippedItems = loadEquippedItems();
+    //     setEquippedItems(loadedEquippedItems);
+    //     console.log("nfts = ", nfts)
+    // }, [nfts, setEquippedItems]); // setEquippedItems도 의존성 배열에 추가
 
 
-    useEffect(() => {
-        console.log("equippedItems = ", equippedItems)
-        console.log("nfts = ", nfts)
-    }, [equippedItems])
+    // useEffect(() => {
+    //     console.log("equippedItems = ", equippedItems)
+    //     console.log("nfts = ", nfts)
+    // }, [equippedItems])
 
     const handleEquip = async () => {
         const type = selectedClickNft.account.part;
+        console.log("장착 시작 - 아이템 타입:", type);
         
         let newEquippedItems = { ...equippedItems };
         let fromItemAccountPublicKey = null;
         let toItemAccountPublicKey = selectedClickNft.publicKey;
         
+        console.log("현재 장착된 아이템:", equippedItems);
+        
         // arms 타입일 경우 L-Hand와 R-Hand에 장착
         if (type === 'arms') {
+            console.log("무기 아이템 장착 시도");
             // 왼쪽이 비어있으면 왼쪽에, 왼쪽이 있으면 오른쪽에 장착
-            if (!newEquippedItems['L-Hand']) {
+            if (!newEquippedItems['L-Hand'] && !newEquippedItems['R-Hand']) {
+                console.log("양손 모두 비어있음 - 왼손에 장착");
+                newEquippedItems = {
+                    ...newEquippedItems,
+                    'L-Hand': selectedClickNft,
+                };
+            } else if (!newEquippedItems['L-Hand'] && newEquippedItems['R-Hand']) {
+                console.log("왼손이 비어있고 오른손이 차있음 - 왼손에 장착");
                 newEquippedItems = {
                     ...newEquippedItems,
                     'L-Hand': selectedClickNft
                 };
-            } else if(!newEquippedItems['R-Hand']){
+            } else if(!newEquippedItems['R-Hand'] && newEquippedItems['L-Hand']){
+                console.log("오른손이 비어있고 왼손이 차있음 - 오른손에 장착");
                 newEquippedItems = {
                     ...newEquippedItems,
                     'R-Hand': selectedClickNft
                 };
             }else if(newEquippedItems['L-Hand'] && newEquippedItems['R-Hand']){
+                console.log("양손 모두 차있음 - 왼손 아이템 교체");
                 fromItemAccountPublicKey = newEquippedItems['L-Hand'].publicKey;
                 newEquippedItems = {
                     ...newEquippedItems,
@@ -74,8 +80,10 @@ export function SelectedNftInteraction({
                 };
             }
         } else {
+            console.log(`일반 아이템 장착 시도 - ${type} 부위`);
             // 일반적인 경우: 해당 부위에만 선택된 NFT를 장착
             if (newEquippedItems[type] && newEquippedItems[type].publicKey) {
+                console.log("해당 부위에 이미 장착된 아이템이 있음 - 교체");
                 fromItemAccountPublicKey = newEquippedItems[type].publicKey;
             }
             newEquippedItems = {
@@ -84,24 +92,29 @@ export function SelectedNftInteraction({
             };
         }
         
-        console.log("fromItemAccountPublicKey = ", fromItemAccountPublicKey);
-        console.log("toItemAccountPublicKey = ", toItemAccountPublicKey);
+        console.log("교체될 아이템 PublicKey:", fromItemAccountPublicKey);
+        console.log("장착할 아이템 PublicKey:", toItemAccountPublicKey);
         
         try {
+            console.log("장착 트랜잭션 시작");
             // 먼저 트랜잭션 실행
             await updateEquipItem(false, true, fromItemAccountPublicKey, toItemAccountPublicKey);
             
+            console.log("트랜잭션 성공 - NFT 상태 업데이트");
             // 트랜잭션 성공 후 상태 업데이트
             let updatedNfts = nfts.map((nft) => {
                 if (nft.publicKey === fromItemAccountPublicKey) {
+                    console.log("이전 아이템 장착 해제");
                     return { ...nft, account: { ...nft.account, equipped: false } };
                 }
                 if (nft.publicKey === toItemAccountPublicKey) {
+                    console.log("새 아이템 장착");
                     return { ...nft, account: { ...nft.account, equipped: true } };
                 }
                 return nft;
             });
             
+            console.log("상태 업데이트 완료");
             // 상태 업데이트
             setNfts([...updatedNfts]);  // 새 배열을 생성하여 참조 변경 확실히 함
             setEquippedItems(newEquippedItems);
@@ -210,7 +223,7 @@ export function SelectedNftInteraction({
                 </div>
                 
                 <div className="flex justify-end gap-2 mt-4">
-                    {isEquipped ? (
+                    {selectedClickNft.account.equipped ? (
                         <button className="btn btn-warning" onClick={handleUnequip}>장착 해제</button>
                     ) : (
                         <button className="btn btn-primary" onClick={handleEquip}>장착하기</button>

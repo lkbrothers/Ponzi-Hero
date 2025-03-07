@@ -12,7 +12,8 @@ import {WalletButton} from '../solana/solana-provider'
 
 import mainTitle from '../../assets/mainTitle.png'
 import { useButtonStore } from '../../store/buttonStore'
-
+import { useUserStore } from '../../store/userStore'
+import { useQuery } from '@tanstack/react-query'
 export function UiLayout({ children, links }: { children: ReactNode; links: { label: string; path: string }[] }) {
   const pathname = usePathname()
 
@@ -157,15 +158,18 @@ export function useTransactionToast() {
 }
 
 const scoreBoard = () => {
-  const { buttonType, setButtonType } = useButtonStore();
-  
+  const { data: credit } = useQuery({
+    queryKey: ['credit'],
+    queryFn: () => useUserStore.getState().credit
+  });
+    
   return (
     <div className="w-1/4">
     <div className="flex-none w-full bg-black text-white ">
       <div className="flex flex-col w-full items-center gap-2 text-2xl py-2 px-4">
         <div className="flex flex-row w-full justify-between gap-2">
           <p>CREDIT</p>
-          <p>100</p>
+          <p>{credit}</p>
         </div>
         {/* <div className="flex flex-row w-full justify-between gap-2 mb-2">
           <p>BUTTON</p>

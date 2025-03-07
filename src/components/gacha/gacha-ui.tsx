@@ -25,7 +25,7 @@ import { useGameProgram, useGameProgramDBAccount } from '../game/game-data-acces
 import { useCreditProgram } from './gacha-data-access'
 import { useGachaWithCredit } from './gacha-data-access'
 import { getImageUrl } from '../inventory/items/item-ui'
-
+import { useUserStore } from '@/store/userStore'
 
 export function GachaExplain() {
     return (
@@ -97,7 +97,13 @@ export function GachaCreate() {
     const { dbAccount, creditAccount, selectedDbAccount, selectedCreditAccount, setDbAccount, setCreditAccount, selectDbAccount, selectCreditAccount } = useAccountStore()
 
     const { fetchBlockInfo } = useGameProgram();
+    const { CreditAccount } = useCreditProgram();
 
+    const {setCredit} = useUserStore();
+    const { data: credit } = useQuery({
+      queryKey: ['credit'],
+      queryFn: () => useUserStore.getState().credit
+    });
     const {
       remitForRandomMutation,
       fetchCodeAccount
@@ -122,8 +128,31 @@ export function GachaCreate() {
   };
 
   useEffect(() => {
+    const fetchCreditBalance = async () => {
+        if (!CreditAccount) return;
+        const balance = await CreditAccount.balance.toString();
+        console.log("balance = ", balance)
+        setCredit(balance);
+      };
+  
+      const creditBalance = fetchCreditBalance();
+      console.log("creditBalance = ", creditBalance)
+      //setCredit(creditBalance)
+  }, [])
+
+  useEffect(() => {
     handleGachaClick()
   }, [codeAccount])
+
+  useEffect(() => {
+    const fetchCreditBalance = async () => {
+      if (!CreditAccount) return;
+      const balance = await CreditAccount.balance.toString();
+      setCredit(balance);
+    };
+
+    fetchCreditBalance();
+  }, [CreditAccount]);
 
     const handleGachaClick = async () => {
         if(!connected) {
@@ -196,6 +225,11 @@ export function GachaCreate() {
                 setGachaResult(nftResult)
                 setShowModal(true)
 
+                const getCreditBalance = () => {
+                    if (!CreditAccount) return "로딩 중...";
+                    return CreditAccount.balance.toString();
+                };
+                setCredit(getCreditBalance())
                 // 색종이 효과 추가
                 confetti({
                     particleCount: 100,
@@ -222,6 +256,7 @@ export function GachaCreate() {
         <>
             <div className={`flex flex-col w-full items-center justify-${isInventory ? 'between' : 'end'}`}>
                 <MainContent
+                    credit={credit}
                     isGacha={isGacha}
                     isInventory={isInventory}
                     isRanking={isRanking}
@@ -359,7 +394,8 @@ const LeftMenu = ({ isGacha, isInventory, isRanking, setIsGacha, setIsInventory,
     )
 }
 
-const MainContent = ({ isGacha, isInventory, isRanking, handleRemit: parentHandleRemit, handleGachaClick, connected, showModal, gachaResult, onClose, onRetry, dbAccount, creditAccount, setDbAccount, setCreditAccount, setCodeAccount, setDummyTx }: {
+const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: parentHandleRemit, handleGachaClick, connected, showModal, gachaResult, onClose, onRetry, dbAccount, creditAccount, setDbAccount, setCreditAccount, setCodeAccount, setDummyTx }: {
+    credit: number | undefined,
     isGacha: boolean,
     isInventory: boolean,
     isRanking: boolean,
@@ -561,7 +597,7 @@ const MainContent = ({ isGacha, isInventory, isRanking, handleRemit: parentHandl
                             {dbAccount && creditAccount && (
                                 <div className="bg-base-200 p-4 rounded-lg shadow-md mb-4">
                                     <h3 className="text-xl font-bold mb-2">크레딧 정보</h3>
-                                    <p className="text-lg">현재 잔액: <span className="font-bold text-primary">{getCreditBalance()}</span> 크레딧</p>
+                                    <p className="text-lg">현재 잔액: <span className="font-bold text-primary">{credit}</span> 크레딧</p>
                                     <button
                                         className="btn btn-sm btn-outline btn-accent mt-2"
                                         onClick={() => handleCreditDeposit(1000)}
