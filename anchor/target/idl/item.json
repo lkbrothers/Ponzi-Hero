@@ -1,0 +1,248 @@
+{
+  "address": "3BjKmutGGbVtnVeeJnNg9xKqkAticq7WYvBjuBr1dQab",
+  "metadata": {
+    "name": "item",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "create_item_account",
+      "discriminator": [
+        31,
+        93,
+        216,
+        237,
+        33,
+        86,
+        161,
+        61
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "item_account",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "grade",
+          "type": "string"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "uri",
+          "type": "string"
+        },
+        {
+          "name": "part",
+          "type": "string"
+        },
+        {
+          "name": "equipped",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "delete_item_account",
+      "discriminator": [
+        193,
+        151,
+        83,
+        151,
+        234,
+        9,
+        9,
+        9
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "item_account"
+          ]
+        },
+        {
+          "name": "item_account",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "random_mint_item",
+      "discriminator": [
+        130,
+        208,
+        110,
+        79,
+        102,
+        133,
+        121,
+        128
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "item_account",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "recent_blockhashes",
+          "address": "SysvarRecentB1ockHashes11111111111111111111"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "gacha_type",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "update_item_account",
+      "discriminator": [
+        193,
+        246,
+        99,
+        158,
+        71,
+        166,
+        127,
+        216
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "signer": true,
+          "relations": [
+            "item_account"
+          ]
+        },
+        {
+          "name": "item_account",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "grade",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "name",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "uri",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "part",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "equipped",
+          "type": {
+            "option": "bool"
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "ItemAccount",
+      "discriminator": [
+        203,
+        112,
+        16,
+        182,
+        215,
+        183,
+        63,
+        175
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidGachaType",
+      "msg": "Invalid Gacha Type Determined."
+    },
+    {
+      "code": 6001,
+      "name": "InvalidItemGrade",
+      "msg": "Invalid Item Grade Determined."
+    }
+  ],
+  "types": [
+    {
+      "name": "ItemAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "grade",
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "part",
+            "type": "string"
+          },
+          {
+            "name": "equipped",
+            "type": "bool"
+          }
+        ]
+      }
+    }
+  ]
+}

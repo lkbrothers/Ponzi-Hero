@@ -6,6 +6,11 @@ import { NftCardDetail } from './item-detail'
 import { SelectedNftInteraction } from './item-card'
 import nftimg from '../../../assets/nft.png'
 
+import commonFrame from '../../../assets/frame/comm.png'
+import rareFrame from '../../../assets/frame/rare.png'
+import epicFrame from '../../../assets/frame/epic.png'
+import legendaryFrame from '../../../assets/frame/legen.png'
+
 export function Inventory({ tokens, nfts, equippedItems, setEquippedItems }: { 
     tokens: any[], 
     nfts: any[], 
@@ -18,6 +23,22 @@ export function Inventory({ tokens, nfts, equippedItems, setEquippedItems }: {
     const [showClickDetail, setShowClickDetail] = useState(false);
     const [clickDetailPosition, setClickDetailPosition] = useState({ x: 0, y: 0 });
     const [selectedClickNft, setSelectedClickNft] = useState<any>(null);
+    const [currentPage, setCurrentPage] = useState(0);
+    
+    const itemsPerPage = 16; // 4x4 그리드
+    const totalPages = Math.ceil(nfts.length / itemsPerPage);
+    
+    const handleNextPage = () => {
+        if (currentPage < totalPages - 1) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+    
+    const handlePrevPage = () => {
+        if (currentPage > 0) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
 
     const handleMouseEnter = (nft: any, e: React.MouseEvent) => {
         setSelectedNft(nft);
@@ -44,53 +65,77 @@ export function Inventory({ tokens, nfts, equippedItems, setEquippedItems }: {
             item && item.account.data.parsed.info.mint === nft.account.data.parsed.info.mint
         );
     };
+    
+    // 현재 페이지에 표시할 NFT 계산
+    const currentNfts = nfts.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage);
+    
+    // 4x4 그리드를 위한 배열 생성 (빈 칸 포함)
+    const gridItems = Array(15).fill(null).map((_, index) => {
+        return index < currentNfts.length ? currentNfts[index] : null;
+    });
 
     return (
-        <div className="flex flex-col items-center gap-8 w-full">
-            <div className="flex flex-col items-center gap-4 w-full max-h-[65vh] overflow-y-auto pr-2">
-                <h2 className="text-xl font-bold top-0 bg-base-100 py-2 z-10">인벤토리</h2>
+        <div className="flex flex-col items-center gap-8 w-1/2 h-full">
+            <div className="flex flex-col items-center gap-2 w-full">
                 
-                <div className="flex flex-wrap justify-center">
+                <div className="grid grid-cols-5 gap-2 justify-center">
                     {tokens.length > 0 ? tokens.map((token, i) => (
-                        <div key={i} className="w-16 h-16 border-2 border-gray-400 rounded flex items-center justify-center">
+                        <div key={i} className="w-[6vw] h-[6vw] border-2 border-gray-400 rounded flex items-center justify-center">
                             <div className="text-xs text-center">
                                 <p>수량: {(token.account.data as ParsedAccountData).parsed.info.tokenAmount.uiAmount}</p>
                             </div>
                         </div>
-                    )) : [...Array(20)].map((_, i) => (
+                    )) : gridItems.map((nft, i) => (
                         <div 
-                            key={i} 
-                            className={`w-[250px] h-[304px] border-2 
-                                rounded-[30px]
-                                ${nfts[i] && isEquipped(nfts[i]) ? 'border-yellow-400' : 'border-gray-400'} rounded flex items-center justify-center overflow-hidden relative m-2`}
-                            onMouseEnter={(e) => nfts[i] && handleMouseEnter(nfts[i], e)}
+                            key={i + currentPage * itemsPerPage} 
+                            className={`w-[6vw] h-[6vw] 
+                                ${nft && isEquipped(nft) ? 'border-yellow-400' : 'border-gray-400'} rounded flex items-center justify-center overflow-hidden relative
+                                `}
+                            
+                            onMouseEnter={(e) => nft && handleMouseEnter(nft, e)}
                             onMouseMove={handleMouseMove}
                             onMouseLeave={handleMouseLeave}
-                            onClick={() => nfts[i] && handleNftClick(nfts[i])}
+                            onClick={() => nft && handleNftClick(nft)}
                         >
-                            {nfts[i] && (
+                            {nft ? (
                                 <div className="flex flex-col items-center justify-center w-full h-full">
+                                    <Frame nft={nft} />
                                     <img 
-                                        src={nfts[i].account.data.parsed.info.image || nftimg.src} 
-                                        alt={nfts[i].account.data.parsed.info.name || `아이템 #${i + 1}`}
-                                        className="w-full h-1/2 object-cover"
+                                        src={nft.account.data.parsed.info.image || nftimg.src} 
+                                        alt={nft.account.data.parsed.info.name || `아이템 #${i + 1 + currentPage * itemsPerPage}`}
+                                        className="w-[90%] h-[90%] object-cover z-10"
                                     />
-                                    <div className="flex flex-col items-center justify-center w-full h-1/2">
-                                        <p className="text-xs text-center">{nfts[i].account.data.parsed.info.name}</p>
-                                    </div>
+                                </div>
+                            ) : (
+                                <div className="w-full h-full bg-gray-100 flex items-center justify-center">
                                 </div>
                             )}
-                            {nfts[i] && isEquipped(nfts[i]) && (
+                            {nft && isEquipped(nft) && (
                                 <div className="absolute top-0 right-0 bg-yellow-400 text-xs px-1">장착</div>
                             )}
                         </div>
                     ))}
                 </div>
 
-                {/* <div className="flex gap-4 mt-4 sticky bottom-0 bg-base-100 py-2">
-                    <button className="btn btn-primary">이전</button>
-                    <button className="btn btn-primary">다음</button>
-                </div> */}
+                <div className="flex gap-4 mt-4  py-2">
+                    <button 
+                        className="btn btn-primary" 
+                        onClick={handlePrevPage}
+                        disabled={currentPage === 0}
+                    >
+                        이전
+                    </button>
+                    <span className="flex items-center">
+                        {currentPage + 1} / {totalPages}
+                    </span>
+                    <button 
+                        className="btn btn-primary" 
+                        onClick={handleNextPage}
+                        disabled={currentPage === totalPages - 1}
+                    >
+                        다음
+                    </button>
+                </div>
             </div>
 
             {showDetail && selectedNft && (
@@ -108,6 +153,39 @@ export function Inventory({ tokens, nfts, equippedItems, setEquippedItems }: {
                     setEquippedItems={setEquippedItems}
                 />
             )}
+        </div>
+    )
+}
+
+const Frame = ({ nft }: { nft: any }) => {
+    const grade = nft.account.data.parsed.info.grade;
+    let frameSrc;
+    let gradeText;
+    
+    if (grade === 'common') {
+        frameSrc = commonFrame.src;
+        gradeText = 'Common';
+    } else if (grade === 'Rare') {
+        frameSrc = rareFrame.src;
+        gradeText = 'Rare';
+    } else if (grade === 'Epic') {
+        frameSrc = epicFrame.src;
+        gradeText = 'Epic';
+    } else {
+        frameSrc = legendaryFrame.src;
+        gradeText = 'Legendary';
+    }
+    
+    return (
+        <div className="absolute top-0 left-0 w-full h-full">
+            <img 
+                src={frameSrc}
+                alt="frame" 
+                className="w-full h-full object-cover" 
+            />
+            <div className="absolute z-20 bottom-1 left-0 w-full text-center text-black text-xs  ">
+                {gradeText}
+            </div>
         </div>
     )
 }
