@@ -94,8 +94,6 @@ function GameDashboard({ userPublicKey, dbAccount }: { userPublicKey: PublicKey,
 
     const { fetchBlockInfo } = useGameProgram()
 
-    const { CodeAccounts } = useGameProgram()
-
     const [codeAccount, setCodeAccount] = useState<PublicKey | null>(null);
     const [codeChain, setCodeChain] = useState<{ txHash: string; before_tx: string; nft: string }[]>([])
     const [dummyTx, setDummyTx] = useState<string | null>(null);

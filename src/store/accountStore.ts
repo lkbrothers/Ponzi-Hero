@@ -13,14 +13,14 @@ interface CreditAccount {
 }
 
 interface AccountState {
-  dbAccount: DbAccount;
+  dbAccount: PublicKey;
   creditAccount: CreditAccount;
-  selectedDbAccount: DbAccount | null;
+  selectedDbAccount: PublicKey | null;
   selectedCreditAccount: CreditAccount | null;
   
   // DbAccount 관련 액션
-  setDbAccount: (account: DbAccount) => void;
-  selectDbAccount: (account: DbAccount | null) => void;
+  setDbAccount: (account: PublicKey) => void;
+  selectDbAccount: (account: PublicKey | null) => void;
   
   // CreditAccount 관련 액션
   setCreditAccount: (account: CreditAccount) => void;
