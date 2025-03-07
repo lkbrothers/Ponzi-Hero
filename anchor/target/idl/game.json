@@ -8,16 +8,16 @@
   },
   "instructions": [
     {
-      "name": "db_code_in",
+      "name": "finalize_game",
       "discriminator": [
-        38,
-        100,
-        165,
-        242,
-        99,
-        137,
-        206,
-        108
+        203,
+        227,
+        3,
+        167,
+        186,
+        102,
+        76,
+        10
       ],
       "accounts": [
         {
@@ -30,28 +30,44 @@
           "writable": true
         },
         {
+          "name": "code_account",
+          "writable": true
+        },
+        {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "code_tx_hash",
+          "name": "dummy_tx_hash",
           "type": "string"
+        },
+        {
+          "name": "block_hash",
+          "type": "string"
+        },
+        {
+          "name": "slot",
+          "type": "u64"
+        },
+        {
+          "name": "block_time",
+          "type": "u64"
         }
       ]
     },
     {
-      "name": "finalize_game",
+      "name": "remit_for_random",
       "discriminator": [
-        203,
-        227,
-        3,
-        167,
-        186,
-        102,
-        76,
-        10
+        238,
+        111,
+        87,
+        135,
+        161,
+        97,
+        51,
+        115
       ],
       "accounts": [
         {
@@ -92,52 +108,6 @@
               }
             ]
           }
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "remit_tx_hash",
-          "type": "string"
-        },
-        {
-          "name": "block_hash",
-          "type": "string"
-        },
-        {
-          "name": "slot",
-          "type": "u64"
-        },
-        {
-          "name": "block_time",
-          "type": "u64"
-        }
-      ]
-    },
-    {
-      "name": "remit_for_random",
-      "discriminator": [
-        238,
-        111,
-        87,
-        135,
-        161,
-        97,
-        51,
-        115
-      ],
-      "accounts": [
-        {
-          "name": "user",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "db_account",
-          "writable": true
         },
         {
           "name": "system_program",
@@ -298,10 +268,6 @@
           {
             "name": "bump",
             "type": "u8"
-          },
-          {
-            "name": "nickname",
-            "type": "string"
           },
           {
             "name": "tail_tx",

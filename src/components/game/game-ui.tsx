@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 import { ellipsify } from '../ui/ui-layout'
 import { ExplorerLink } from '../cluster/cluster-ui'
-import { useGameProgram, useGameProgramAccount } from './game-data-access'
+import { useGameProgram, useGameProgramDBAccount } from './game-data-access'
 
 /* 
   Account 초기화 버튼
@@ -87,76 +87,96 @@ function GameDashboard({ userPublicKey, dbAccount }: { userPublicKey: PublicKey,
     const {
         dbAccountQuery,
         remitForRandomMutation,
-        dbCodeInMutation,
-        finalizeGameMutation,
         fetchCodeChain,
-    } = useGameProgramAccount({ userPublicKey, dbAccount })
+        finalizeGameMutation,
+        fetchCodeAccount,
+    } = useGameProgramDBAccount({ userPublicKey, dbAccount })
+
+    const { CodeAccounts } = useGameProgram()
+    const [codeAccount, setCodeAccount] = useState<PublicKey | null>(null);
+
+    // CodeAccounts가 업데이트될 때 codeAccount 상태를 갱신
+    useEffect(() => {
+        if (CodeAccounts.data && CodeAccounts.data.length > 0) {
+            setCodeAccount(CodeAccounts.data[0].publicKey);
+        }
+    }, [CodeAccounts.data]);
 
     const { fetchBlockInfo } = useGameProgram()
 
     // 최신 코드 계정의 키(문자열)를 저장 (dbAccount.tailTx를 사용)
-    const nickname = useMemo(() => dbAccountQuery.data?.nickname ?? '', [dbAccountQuery.data?.nickname])
     const recentTailTx = useMemo(() => dbAccountQuery.data?.tailTx ?? '', [dbAccountQuery.data?.tailTx])
 
     // codeChain을 상태로 관리
     const [codeChain, setCodeChain] = useState<{ txHash: string; before_tx: string; nft: string }[]>([])
+    // 송금 트랜잭션 해시를 저장할 상태
+    const [dummyTx, setDummyTx] = useState<string | null>(null);
 
-    // 컴포넌트 진입 시 tailTx를 기반으로 codeChain을 조회
-    useEffect(() => {
-        if (recentTailTx) {
-            fetchCodeChain(recentTailTx)
-                .then(setCodeChain)
-                .catch((error) => console.error("Error fetching code chain:", error))
-        }
-    }, [recentTailTx, fetchCodeChain])
-
-    // Remit 및 Finalize 체인 실행
-    const handleRemitAndFinalize = async () => {
+    // 송금 버튼 핸들러
+    const handleRemit = async () => {
         try {
-            // 1. remitForRandom 실행 → remitTxHash 획득
-            const remitTxHash = await remitForRandomMutation.mutateAsync()
-            toast.success(`Remit successful: ${remitTxHash}`)
+            // 1. remitForRandom 실행 → dummyTx 획득
+            const txHash = await remitForRandomMutation.mutateAsync();
+            toast.success(`송금 성공: ${txHash}`);
+            setDummyTx(txHash);
+            const codeAccount = await fetchCodeAccount(txHash);
+            setCodeAccount(codeAccount);
+        } catch (error) {
+            console.error(error);
+            toast.error("송금에 실패했습니다.");
+        }
+    };
 
-            // 2. game-data-access의 fetchBlockInfo 함수를 사용해 블록 정보를 조회
-            const { blockHash, slot, blockTime } = await fetchBlockInfo(remitTxHash)
-
-            // 3. finalizeGame 실행: remitTxHash, blockHash 전달
+    // 게임 시작 버튼 핸들러 (finalizeGame 실행)
+    const handleGameStart = async () => {
+        if (!dummyTx) {
+            toast.error("먼저 송금을 진행해주세요.");
+            return;
+        }
+        try {
+            console.log("codeAccount =", codeAccount);
+            // 2. fetchBlockInfo를 사용해 블록 정보 조회
+            const { blockHash, slot, blockTime } = await fetchBlockInfo(dummyTx);
+            // 3. finalizeGame 실행 (dummyTx와 블록 정보를 전달)
             const finalizeSignature = await finalizeGameMutation.mutateAsync({
-                remitTxHash,
+                codeAccount: codeAccount ?? PublicKey.default,
+                dummyTxHash: dummyTx,
                 blockHash,
                 slot,
                 blockTime: blockTime ?? 0,
-            })
-            toast.success(`Finalize Game successful: ${finalizeSignature}`)
+            });
+            toast.success(`게임 시작 성공: ${finalizeSignature}`);
 
-            // 4. finalizeGame의 signature를 dbCodeInMutation의 tailTx 파라미터로 전달하여 실행
-            await dbCodeInMutation.mutateAsync(finalizeSignature)
-            toast.success(`db_code_in updated with new tailTx: ${finalizeSignature}`)
+            // 4. dbCodeInMutation을 통해 db의 tailTx 업데이트
+            // await dbCodeInMutation.mutateAsync(finalizeSignature);
+            // toast.success(`db_code_in 업데이트 성공: ${finalizeSignature}`);
 
-            // 5. 새롭게 생성된 tailTx (finalizeSignature)를 기준으로 codeChain 재조회하여 업데이트
-            const updatedChain = await fetchCodeChain(finalizeSignature)
-            setCodeChain(updatedChain)
+            // 5. 새로운 tailTx(finalizeSignature)를 기준으로 codeChain 재조회
+            const updatedChain = await fetchCodeChain(finalizeSignature);
+            setCodeChain(updatedChain);
         } catch (error) {
-            console.error(error)
-            toast.error("Failed to execute remit/finalize chain")
+            console.error(error);
+            toast.error("게임 시작에 실패했습니다.");
         }
-    }
+    };
 
     return (
         <div className="space-y-6">
-            
+
             <div className="text-center">
                 <h3 className="text-xl font-bold">DB Account Info</h3>
-                <p><strong>Nickname:</strong> {nickname}</p>
                 <p><strong>TailTx:</strong> {recentTailTx}</p>
             </div>
-            
+
             <div className="text-center">
-                <button className="btn btn-primary" onClick={handleRemitAndFinalize}>
-                    Game Start
+                <button className="btn btn-secondary" onClick={handleRemit}>
+                    송금
+                </button>
+                <button className="btn btn-primary ml-4" onClick={handleGameStart}>
+                    게임 시작
                 </button>
             </div>
-            
+
             <div className="grid md:grid-cols-2 gap-4">
                 {codeChain.length > 0 ? (
                     codeChain.map((entry, idx) => (

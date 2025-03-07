@@ -14,16 +14,16 @@ export type Game = {
   },
   "instructions": [
     {
-      "name": "dbCodeIn",
+      "name": "finalizeGame",
       "discriminator": [
-        38,
-        100,
-        165,
-        242,
-        99,
-        137,
-        206,
-        108
+        203,
+        227,
+        3,
+        167,
+        186,
+        102,
+        76,
+        10
       ],
       "accounts": [
         {
@@ -36,28 +36,44 @@ export type Game = {
           "writable": true
         },
         {
+          "name": "codeAccount",
+          "writable": true
+        },
+        {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "codeTxHash",
+          "name": "dummyTxHash",
           "type": "string"
+        },
+        {
+          "name": "blockHash",
+          "type": "string"
+        },
+        {
+          "name": "slot",
+          "type": "u64"
+        },
+        {
+          "name": "blockTime",
+          "type": "u64"
         }
       ]
     },
     {
-      "name": "finalizeGame",
+      "name": "remitForRandom",
       "discriminator": [
-        203,
-        227,
-        3,
-        167,
-        186,
-        102,
-        76,
-        10
+        238,
+        111,
+        87,
+        135,
+        161,
+        97,
+        51,
+        115
       ],
       "accounts": [
         {
@@ -98,52 +114,6 @@ export type Game = {
               }
             ]
           }
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "remitTxHash",
-          "type": "string"
-        },
-        {
-          "name": "blockHash",
-          "type": "string"
-        },
-        {
-          "name": "slot",
-          "type": "u64"
-        },
-        {
-          "name": "blockTime",
-          "type": "u64"
-        }
-      ]
-    },
-    {
-      "name": "remitForRandom",
-      "discriminator": [
-        238,
-        111,
-        87,
-        135,
-        161,
-        97,
-        51,
-        115
-      ],
-      "accounts": [
-        {
-          "name": "user",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "dbAccount",
-          "writable": true
         },
         {
           "name": "systemProgram",
@@ -304,10 +274,6 @@ export type Game = {
           {
             "name": "bump",
             "type": "u8"
-          },
-          {
-            "name": "nickname",
-            "type": "string"
           },
           {
             "name": "tailTx",

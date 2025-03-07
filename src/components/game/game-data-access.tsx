@@ -74,7 +74,7 @@ export function useGameProgram() {
     }
 }
 
-export function useGameProgramAccount({
+export function useGameProgramDBAccount({
     userPublicKey,
     dbAccount,
 }: {
@@ -84,7 +84,7 @@ export function useGameProgramAccount({
 
     const { cluster } = useCluster()
     const transactionToast = useTransactionToast()
-    const { program, connection } = useGameProgram()
+    const { program, programId, connection, CodeAccounts } = useGameProgram()
 
     const dbAccountQuery = useQuery({
         queryKey: ['game', 'fetch', { cluster, dbAccount }],
@@ -108,50 +108,80 @@ export function useGameProgramAccount({
         onError: () => toast.error('Failed to remit for random'),
     })
 
-    const dbCodeInMutation = useMutation({
-        mutationKey: ['game', 'dbCodeIn', { cluster, dbAccount }],
-        mutationFn: (codeTxHash: string) =>
-            program.methods
-                .dbCodeIn(codeTxHash)
-                .accounts({
-                    user: userPublicKey,
-                    dbAccount: dbAccount,
-                })
-                .rpc(),
-        onSuccess: (signature) => {
-            transactionToast(signature)
-            return { dbAccountQuery: dbAccountQuery.refetch() }
-        },
-        onError: () => toast.error('Failed to send db code'),
-    })
-
     const finalizeGameMutation = useMutation({
         mutationKey: ['game', 'finalizeGame', { cluster, dbAccount }],
         mutationFn: ({
-            remitTxHash,
+            codeAccount,
+            dummyTxHash,
             blockHash,
             slot,
             blockTime,
         }: {
-            remitTxHash: string,
+            codeAccount: PublicKey,
+            dummyTxHash: string,
             blockHash: string,
             slot: number,
             blockTime: number,
         }) => {
             return program.methods
-                .finalizeGame(remitTxHash, blockHash, new BN(slot), new BN(blockTime))
+                .finalizeGame(dummyTxHash, blockHash, new BN(slot), new BN(blockTime))
                 .accounts({
                     user: userPublicKey,
                     dbAccount: dbAccount,
+                    codeAccount: codeAccount,
                 })
                 .rpc()
         },
         onSuccess: (signature) => {
             transactionToast(signature)
-            return { dbAccountQuery: dbAccountQuery.refetch(), }
+            return { CodeAccounts: CodeAccounts.refetch() }
         },
         onError: () => toast.error('Failed to finalize game'),
     })
+
+    const fetchCodeAccount = async (
+        currentTxHash: string,
+    ): Promise<PublicKey | null> => {
+        // 트랜잭션 정보 조회 (confirmed 상태)
+        const txResponse = await connection.getParsedTransaction(currentTxHash, { commitment: "confirmed" });
+        if (!txResponse) {
+            console.error("Transaction not found", txResponse);
+            return null;
+        }
+
+
+        console.log("fetchCodeAccount Top-level Instructions:", JSON.stringify(txResponse.transaction.message.instructions, null, 2));
+        console.log("fetchCodeAccount Inner Instructions:", JSON.stringify(txResponse.meta?.innerInstructions, null, 2));
+
+        let codeAccountPDA: PublicKey | null = null;
+
+        // 트랜잭션 내의 innerInstructions에서 createAccount 인스트럭션 탐색
+        if (txResponse.meta?.innerInstructions) {
+            for (const inner of txResponse.meta.innerInstructions) {
+                for (const instr of inner.instructions) {
+                    // 시스템 프로그램의 createAccount 인스트럭션 확인
+                    if (
+                        instr.programId.equals(SystemProgram.programId) &&
+                        "parsed" in instr &&
+                        instr.parsed?.type === "createAccount"
+                    ) {
+                        // 새로 생성된 계정 주소 추출
+                        const newAccount = instr.parsed.info.newAccount;
+                        codeAccountPDA = new PublicKey(newAccount);
+                        break;
+                    }
+                }
+                if (codeAccountPDA) break;
+            }
+        }
+
+        if (!codeAccountPDA) {
+            console.error("Code account PDA not found in transaction.");
+            return null;
+        }
+
+        return codeAccountPDA;
+    }
 
     const fetchCodeChain = useCallback(
         async (
@@ -167,18 +197,47 @@ export function useGameProgramAccount({
                     console.error("Transaction not found", txResponse);
                     return chain;
                 }
+                console.log("Top-level Instructions:", JSON.stringify(txResponse.transaction.message.instructions, null, 2));
+                console.log("Inner Instructions:", JSON.stringify(txResponse.meta?.innerInstructions, null, 2));
 
                 let codeAccountPDA: PublicKey | null = null;
-                if (txResponse.meta?.innerInstructions) {
+
+                // 먼저 top-level instructions에서 검색
+                for (const instr of txResponse.transaction.message.instructions) {
+                    // 1. parsed된 시스템 프로그램 createAccount 인스트럭션이 있으면 사용
+                    if (
+                        instr.programId.equals(SystemProgram.programId) &&
+                        "parsed" in instr &&
+                        instr.parsed?.type === "createAccount"
+                    ) {
+                        const newAccount = instr.parsed.info.newAccount;
+                        codeAccountPDA = new PublicKey(newAccount);
+                        break;
+                    }
+                    // 2. parsed 정보가 없으면, accounts 프로퍼티가 있는지 타입 가드로 확인한 후,
+                    //    accounts 배열의 3번째 요소를 code_account PDA로 사용
+                    if ("accounts" in instr && Array.isArray((instr as any).accounts)) {
+                        const accounts = (instr as any).accounts as string[];
+                        if (
+                            instr.programId.equals(programId) &&
+                            accounts.length >= 3
+                        ) {
+                            const newAccountStr = accounts[2];
+                            codeAccountPDA = new PublicKey(newAccountStr);
+                            break;
+                        }
+                    }
+                }
+
+                // innerInstructions에서 검색 (top-level에서 찾지 못한 경우)
+                if (!codeAccountPDA && txResponse.meta?.innerInstructions) {
                     for (const inner of txResponse.meta.innerInstructions) {
                         for (const instr of inner.instructions) {
-                            // 시스템 프로그램의 createAccount 인스트럭션 찾기
                             if (
                                 instr.programId.equals(SystemProgram.programId) &&
                                 "parsed" in instr &&
                                 instr.parsed?.type === "createAccount"
                             ) {
-                                // 새로 생성된 계정 주소를 추출합니다.
                                 const newAccount = instr.parsed.info.newAccount;
                                 codeAccountPDA = new PublicKey(newAccount);
                                 break;
@@ -187,6 +246,8 @@ export function useGameProgramAccount({
                         if (codeAccountPDA) break;
                     }
                 }
+
+                console.log("codeAccountPDA", codeAccountPDA);
 
                 if (!codeAccountPDA) {
                     console.error("Code account PDA not found in transaction.");
@@ -224,8 +285,8 @@ export function useGameProgramAccount({
     return {
         dbAccountQuery,
         remitForRandomMutation,
-        dbCodeInMutation,
-        finalizeGameMutation,
         fetchCodeChain,
+        finalizeGameMutation,
+        fetchCodeAccount,
     }
 }
