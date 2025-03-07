@@ -88,8 +88,53 @@ export function useInventoryItems() {
         }
     }, [program, provider]);
 
+    const updateEquipItem = useCallback(async (
+        fromEquipped: boolean,
+        toEquipped: boolean,
+        fromItemAccountPublicKey: PublicKey | null,
+        toItemAccountPublicKey: PublicKey | null
+    ) => {
+        let updateFromItemAccountIx = null;
+        if (fromItemAccountPublicKey !== null) {
+            updateFromItemAccountIx = await program.methods.updateItemAccount(
+                null,
+                null,
+                null,
+                null,
+                fromEquipped
+            )
+            .accounts({
+                itemAccount: fromItemAccountPublicKey,
+            })
+            .instruction();
+        }
+
+        let updateToItemAccountIx = null;
+        if (toItemAccountPublicKey !== null) {
+            updateToItemAccountIx = await program.methods.updateItemAccount(
+                null,
+                null,
+                null,
+                null,
+                toEquipped
+            )
+            .accounts({
+                itemAccount: toItemAccountPublicKey,
+            })
+            .instruction();
+        }
+
+        const tx = new anchor.web3.Transaction();
+        if (updateFromItemAccountIx) tx.add(updateFromItemAccountIx);
+        if (updateToItemAccountIx) tx.add(updateToItemAccountIx);
+        await provider.sendAndConfirm(tx);
+
+    }, [program, provider]);
+    
+
     return {
         fetchUserItems,
-        mintItem
+        mintItem,
+        updateEquipItem
     };
 }
