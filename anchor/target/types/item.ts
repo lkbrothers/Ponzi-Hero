@@ -116,6 +116,10 @@ export type Item = {
           "signer": true
         },
         {
+          "name": "recentBlockhashes",
+          "address": "SysvarRecentB1ockHashes11111111111111111111"
+        },
+        {
           "name": "dbAccount",
           "writable": true
         },

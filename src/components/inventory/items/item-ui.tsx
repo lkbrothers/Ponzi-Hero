@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ParsedAccountData } from '@solana/web3.js'
 import { NftCardDetail } from './item-detail'
 import { SelectedNftInteraction } from './item-card'
@@ -9,7 +9,9 @@ import nftimg from '../../../assets/nft.png'
 import commonFrame from '../../../assets/frame/comm.png'
 import rareFrame from '../../../assets/frame/rare.png'
 import epicFrame from '../../../assets/frame/epic.png'
+import uniqueFrame from '../../../assets/frame/unique.png'
 import legendaryFrame from '../../../assets/frame/legen.png'
+import degendaryFrame from '../../../assets/frame/degen.png'
 
 export function Inventory({ tokens, nfts, equippedItems, setEquippedItems }: { 
     tokens: any[], 
@@ -24,6 +26,7 @@ export function Inventory({ tokens, nfts, equippedItems, setEquippedItems }: {
     const [clickDetailPosition, setClickDetailPosition] = useState({ x: 0, y: 0 });
     const [selectedClickNft, setSelectedClickNft] = useState<any>(null);
     const [currentPage, setCurrentPage] = useState(0);
+    const [nftImages, setNftImages] = useState<{[key: string]: string}>({});
     
     const itemsPerPage = 16; // 4x4 그리드
     const totalPages = Math.ceil(nfts.length / itemsPerPage);
@@ -61,8 +64,9 @@ export function Inventory({ tokens, nfts, equippedItems, setEquippedItems }: {
     };
 
     const isEquipped = (nft: any) => {
+        // NFT의 고유 식별자(mint 또는 id)를 사용하여 장착 여부 확인
         return Object.values(equippedItems).some(item => 
-            item && item.account.equipped === nft.account.equipped
+            item && (item.account.mint === nft.account.mint || item.account.id === nft.account.id)
         );
     };
     
@@ -73,6 +77,33 @@ export function Inventory({ tokens, nfts, equippedItems, setEquippedItems }: {
     const gridItems = Array(15).fill(null).map((_, index) => {
         return index < currentNfts.length ? currentNfts[index] : null;
     });
+
+    // NFT 메타데이터에서 이미지 URL 가져오기
+    useEffect(() => {
+        const fetchNftMetadata = async () => {
+            const imageUrls: {[key: string]: string} = {};
+            
+            for (const nft of nfts) {
+                if (nft.account.uri) {
+                    try {
+                        const metadataUrl = getImageUrl(nft.account.uri);
+                        const response = await fetch(metadataUrl);
+                        const metadata = await response.json();
+                        
+                        if (metadata.image) {
+                            imageUrls[nft.account.mint || nft.account.id] = getImageUrl(metadata.image);
+                        }
+                    } catch (error) {
+                        console.error('메타데이터 가져오기 실패:', error);
+                    }
+                }
+            }
+            
+            setNftImages(imageUrls);
+        };
+        
+        fetchNftMetadata();
+    }, [nfts]);
 
     return (
         <div className="flex flex-col items-center gap-8 w-1/2 h-full">
@@ -101,7 +132,7 @@ export function Inventory({ tokens, nfts, equippedItems, setEquippedItems }: {
                                 <div className="flex flex-col items-center justify-center w-full h-full">
                                     <Frame nft={nft} />
                                     <img 
-                                        src={'images/'+nft.account.uri || nftimg.src} 
+                                        src={nftImages[nft.account.mint || nft.account.id] || nft.account.uri ? getImageUrl(nft.account.uri) : nftimg.src} 
                                         alt={nft.account.name || `아이템 #${i + 1 + currentPage * itemsPerPage}`}
                                         className="w-[90%] h-[90%] object-cover z-10"
                                     />
@@ -161,17 +192,23 @@ const Frame = ({ nft }: { nft: any }) => {
     const grade = nft.account.grade;
     let frameSrc;
     let gradeText;
-    
-    if (grade === 'common' || 'NORMAL') {
+    if (grade == 'common' || grade == 'NORMAL') {
         frameSrc = commonFrame.src;
-        gradeText = 'Common';
-    } else if (grade === 'Rare') {
+        gradeText = 'Normal';
+    } else if (grade == 'RARE') {
         frameSrc = rareFrame.src;
         gradeText = 'Rare';
-    } else if (grade === 'Epic') {
+    } else if (grade == 'EPIC') {
         frameSrc = epicFrame.src;
         gradeText = 'Epic';
-    } else {
+
+    }else if(grade == 'UNIQUE') {
+        frameSrc = uniqueFrame.src;
+        gradeText = 'Unique';
+    } else if (grade == 'LEGENDARY') {
+        frameSrc = legendaryFrame.src;
+        gradeText = 'Legendary';
+    } else if (grade == 'DEGENDARY') {
         frameSrc = legendaryFrame.src;
         gradeText = 'Legendary';
     }
@@ -188,4 +225,25 @@ const Frame = ({ nft }: { nft: any }) => {
             </div>
         </div>
     )
+}
+
+// IPFS URI를 HTTP URL로 변환하는 함수 추가
+export function getImageUrl(uri: string) {
+    if (!uri) return nftimg.src;
+    
+    // IPFS URI 처리 (ipfs://로 시작하는 경우)
+    if (uri.startsWith('ipfs://')) {
+        // IPFS 게이트웨이 사용 (여러 옵션 중 선택 가능)
+        const ipfsGateway = 'https://ipfs.io/ipfs/';
+        const cid = uri.replace('ipfs://', '');
+        return `${ipfsGateway}${cid}`;
+    }
+    
+    // 이미 HTTP/HTTPS URL인 경우 그대로 반환
+    if (uri.startsWith('http://') || uri.startsWith('https://')) {
+        return uri;
+    }
+    
+    // 기타 경우 기본 이미지 반환
+    return nftimg.src;
 }

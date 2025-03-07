@@ -49,7 +49,7 @@ export default function Page() {
       const userItems = await fetchUserItems();
       console.log("userItems", userItems);
       setNfts(userItems);
-      setNfts(DUMMY_NFTS)
+      //setNfts(DUMMY_NFTS)
     }
 
     fetchWalletData()
@@ -69,7 +69,7 @@ export default function Page() {
 
       <div className="flex flex-row w-[90%] items-center gap-8 bg-[#] py-4">
         <Equipments equippedItems={equippedItems} />
-        <Inventory tokens={tokens} nfts={nfts} equippedItems={equippedItems} setEquippedItems={setEquippedItems} />
+        <Inventory tokens={tokens} nfts={nfts} setNfts={setNfts} equippedItems={equippedItems} setEquippedItems={setEquippedItems} />
       </div>
     </div>
   )

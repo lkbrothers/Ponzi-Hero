@@ -5,11 +5,17 @@ anchor_version = "0.30.1"
 resolution = true
 skip-lint = false
 
+#[programs.localnet]
+#game = "37Z9j1LjgPRHLnB3S3cTL7t4mCSsnWmrtUJj5u9eSBQi"
+#credit = "B2bJBFBn3swvZz5YrtuuPmXZTbUpddBS3AaPc2WiYxg8"
+#item = "A3iwuQp9UcJsxcxXJ9ZWWLv5B616srHw8fCGkEeWgLjN"
+#shop = "2rwPP5Dev33CypTWEEDP1DSGpxYVi7xAcKwiTRYXWQNe"
+
 [programs.localnet]
-game = "37Z9j1LjgPRHLnB3S3cTL7t4mCSsnWmrtUJj5u9eSBQi"
-credit = "B2bJBFBn3swvZz5YrtuuPmXZTbUpddBS3AaPc2WiYxg8"
-item = "A3iwuQp9UcJsxcxXJ9ZWWLv5B616srHw8fCGkEeWgLjN"
-shop = "2rwPP5Dev33CypTWEEDP1DSGpxYVi7xAcKwiTRYXWQNe"
+game = "65vAJ9srf4w7ifZURDhp1GvnLADpwM5CepQPd29A87JF"
+credit = "AuWH2cCt8bxjRCwiF7eqp81dwxyZvVWspV7ip5SiDkbq"
+item = "4M2MAXqYYw9Qwek5WwzttegotU4sajWQrcmEfx8LZfga"
+shop = "G5SuEAeZDuPNsBxpKK8sCtYUoVGXDGXcZNRw6Jch9GQq"
 
 [programs.devnet]
 game = "65vAJ9srf4w7ifZURDhp1GvnLADpwM5CepQPd29A87JF"
@@ -23,7 +29,7 @@ shop = "G5SuEAeZDuPNsBxpKK8sCtYUoVGXDGXcZNRw6Jch9GQq"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "https://api.devnet.solana.com"
+cluster = "Localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]

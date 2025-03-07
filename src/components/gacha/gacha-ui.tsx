@@ -24,6 +24,7 @@ import { useAccountStore } from '@/store/accountStore'
 import { useGameProgram, useGameProgramDBAccount } from '../game/game-data-access'
 import { useCreditProgram } from './gacha-data-access'
 import { useGachaWithCredit } from './gacha-data-access'
+import { getImageUrl } from '../inventory/items/item-ui'
 
 
 export function GachaExplain() {
@@ -39,13 +40,25 @@ export function GachaExplain() {
 
 // NFT 결과 모달 컴포넌트
 function GachaResultModal({ nft, onClose, onRetry }: { nft: any, onClose: () => void, onRetry: () => void }) {
-    return (
+      // IPFS URL 변환 함수
+      const getImageUrl = (uri: string) => {
+        if (!uri) return nftimg.src;
+        
+        // IPFS URI 처리
+        if (uri.startsWith('ipfs://')) {
+            return uri.replace('ipfs://', 'https://ipfs.io/ipfs/');
+        }
+        
+        return uri;
+    };  
+  
+  return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
                 <h2 className="text-2xl font-bold mb-4 text-center">가챠 결과</h2>
                 <div className="flex flex-col items-center gap-4 mb-4">
                     <img
-                        src={`/images/${nft.image}`}
+                        src={getImageUrl(nft.uri)}
                         alt={nft.name}
                         className="w-48 h-48 object-cover rounded"
                     />
@@ -147,12 +160,14 @@ export function GachaCreate() {
                     blockTime: blockTime ?? 0
                 })
 
+
+                console.log("result = ", result)
                 // 민팅된 아이템 정보로 결과 설정
                 const mintedItem = result.mintedItemAccount
                 let gradeIndex = 0
                 const grade = mintedItem.grade
                 switch (grade) {
-                    case 'NORMAL':
+                    case 'COMMON':
                         gradeIndex = 0
                         break
                     case 'RARE':
@@ -173,10 +188,9 @@ export function GachaCreate() {
                 }
 
                 const nftResult = {
-                    name: `${GRADE_NAMES[gradeIndex]}}`,
-                    image: mintedItem.uri,
-                    description: '가챠에서 획득한 아이템입니다.',
-                    grade: gradeIndex,
+                    name: mintedItem.name,
+                    uri: mintedItem.uri,
+                    grade: mintedItem.grade,
                     mint: result.itemAccount.publicKey.toString()
                 }
                 setGachaResult(nftResult)
@@ -212,6 +226,7 @@ export function GachaCreate() {
                     isInventory={isInventory}
                     isRanking={isRanking}
                     handleRemit={handleRemit}
+                    handleGachaClick={handleGachaClick}
                     connected={connected}
                     showModal={showModal}
                     gachaResult={gachaResult}
@@ -344,11 +359,12 @@ const LeftMenu = ({ isGacha, isInventory, isRanking, setIsGacha, setIsInventory,
     )
 }
 
-const MainContent = ({ isGacha, isInventory, isRanking, handleRemit: parentHandleRemit, connected, showModal, gachaResult, onClose, onRetry, dbAccount, creditAccount, setDbAccount, setCreditAccount, setCodeAccount, setDummyTx }: {
+const MainContent = ({ isGacha, isInventory, isRanking, handleRemit: parentHandleRemit, handleGachaClick, connected, showModal, gachaResult, onClose, onRetry, dbAccount, creditAccount, setDbAccount, setCreditAccount, setCodeAccount, setDummyTx }: {
     isGacha: boolean,
     isInventory: boolean,
     isRanking: boolean,
     handleRemit: () => void,
+    handleGachaClick: () => void,
     connected: boolean,
     showModal?: boolean,
     gachaResult?: any,
@@ -519,19 +535,18 @@ const MainContent = ({ isGacha, isInventory, isRanking, handleRemit: parentHandl
                             </div>
                         </div>
                     ) : showModal && gachaResult ? (
-                        <div className=" max-w-md w-full">
-                            <h2 className="text-2xl font-bold mb-4 text-center">가챠 결과</h2>
+                        <div className=" w-full">
+                            <h2 className="text-2xl font-bold  text-center">Congratulations!</h2>
                             <div className="flex flex-col items-center gap-4 mb-4">
                                 <img
-                                    src={`/images/${gachaResult.image}`}
+                                    src={getImageUrl(gachaResult.uri)}
                                     alt={gachaResult.name}
                                     className="w-48 h-48 object-cover rounded"
                                 />
                                 <div className="text-center">
                                     <h3 className="text-xl font-bold">{gachaResult.name}</h3>
-                                    <p className="text-sm text-gray-600">{gachaResult.description}</p>
-                                    <p className="text-sm text-gray-600">등급: {GRADE_NAMES[gachaResult.grade]}</p>
-                                    <p className="text-sm text-gray-600">아이템 ID: {gachaResult.mint.slice(0, 8)}...</p>
+                                    <p className="text-sm text-gray-600">Grade: {gachaResult.grade}</p>
+                                    <p className="text-sm text-gray-600">Item ID: {gachaResult.mint.slice(0, 8)}...</p>
                                 </div>
                             </div>
                         </div>
@@ -553,7 +568,7 @@ const MainContent = ({ isGacha, isInventory, isRanking, handleRemit: parentHandl
                                     >
                                         1000 크레딧 충전
                                     </button>
-                                    <button className="btn btn-secondary" onClick={handleRemitLocal}>
+                                    <button className="btn btn-secondary" onClick={handleGachaClick}>
                                         송금
                                     </button>
                                 </div>

@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-// use anchor_lang::solana_program::hash::{Hash, hash};
+use anchor_lang::solana_program::hash::{Hash, hash};
 
 use game::cpi::{accounts::FinalizeGame, finalize_game};
 
@@ -94,7 +94,7 @@ pub static RARE_ITEMS: &[(&str, &str, &str, &str, &str, u64)] = &[
     ("RARE_0026", "RARE", "Ponzana phone1 Saga", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Ponzanaphone1Saga_arms_rare.png", "arms", 100),
     ("RARE_0027", "RARE", "ponzipaw", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/ponzipaw_arms_rare.png", "arms", 100),
     ("RARE_0028", "RARE", "Ponzi-X", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PonziX_arms_rare.png", "arms", 100),
-    ("RARE_0029", "RARE", "Poodles", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Poodles_arms_rare", "arms", 100),
+    ("RARE_0029", "RARE", "Poodles", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Poodles_arms_rare.png", "arms", 100),
     ("RARE_0030", "RARE", "Porca", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Porca_arms_rare.png", "arms", 100),
     ("RARE_0031", "RARE", "PonziStone", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PonziStone_arms_rare.png", "arms", 100),
     ("RARE_0032", "RARE", "Yogaponz", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Yogaponz_arms_rare.png", "arms", 100),
@@ -111,7 +111,7 @@ pub static EPIC_ITEMS: &[(&str, &str, &str, &str, &str, u64)] = &[
     ("EPIC_0008", "EPIC", "SMP", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/SMP_head_unique.png", "head", 1500),
     ("EPIC_0009", "EPIC", "BPYC", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/BPYC_Body_unique.png", "body", 1500),
     ("EPIC_0010", "EPIC", "Moca vs Ponzi", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/MocavsPonzi_Body_unique.png", "body", 1500),
-    ("EPIC_0011", "EPIC", "Ponz Bear", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PonzBear_Body_unique.png", "body", 1500),
+    ("EPIC_0011", "EPIC", "Ponz Bear", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PondBear_Body_unique.png", "body", 1500),
     ("EPIC_0012", "EPIC", "Azukey", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Azukey_arms_unique.png", "arms", 1500),
     ("EPIC_0013", "EPIC", "Backponzi", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Backponzi_arms_unique.png", "arms", 1500),
     ("EPIC_0014", "EPIC", "CUPIS", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/CUPIS_arms_unique.png", "arms", 1500),
@@ -160,29 +160,29 @@ pub static DEGENDARY_ITEMS: &[(&str, &str, &str, &str, &str, u64)] = &[
     ("DEGEN_0006", "DEGENDARY", "CryptoPonzies", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/CryptoPonzies_arms_degen.png", "arms", 5000000),
 ];
 
-// pub fn generate_seed(ctx: &Context<RandomMintItem>) -> Result<u64> {
-//     // 여러 엔트로피 요소 결합 후 SHA256 적용
-//     let slot = Clock::get()?.slot;
-//     let timestamp = Clock::get()?.unix_timestamp as u64;
-//     let owner_bytes = ctx.accounts.owner.key().to_bytes();
-//     let recent_block_hash = ctx.accounts.recent_blockhashes.data.borrow();
-//     // msg!("FUNCTION CALLED GENERATE_SEED() SLOT VALUE: {}", slot);
-//     // msg!("FUNCTION CALLED GENERATE_SEED() TIMESTAMP VALUE: {}", timestamp);
-//     // msg!("FUNCTION CALLED GENERATE_SEED() OWNER BYTES VALUE: {:?}", owner_bytes);
-//     // msg!("FUNCTION CALLED GENERATE_SEED() RECENT_BLOCK_HASH VALUE: {:?}", recent_block_hash);
+pub fn generate_seed(ctx: &Context<RandomMintItem>) -> Result<u64> {
+    // 여러 엔트로피 요소 결합 후 SHA256 적용
+    let slot = Clock::get()?.slot;
+    let timestamp = Clock::get()?.unix_timestamp as u64;
+    let owner_bytes = ctx.accounts.owner.key().to_bytes();
+    let recent_block_hash = ctx.accounts.recent_blockhashes.data.borrow();
+    // msg!("FUNCTION CALLED GENERATE_SEED() SLOT VALUE: {}", slot);
+    // msg!("FUNCTION CALLED GENERATE_SEED() TIMESTAMP VALUE: {}", timestamp);
+    // msg!("FUNCTION CALLED GENERATE_SEED() OWNER BYTES VALUE: {:?}", owner_bytes);
+    // msg!("FUNCTION CALLED GENERATE_SEED() RECENT_BLOCK_HASH VALUE: {:?}", recent_block_hash);
 
-//     // 각 요소를 바이트 배열로 변환하여 결합
-//     let mut entropy = Vec::new();
-//     entropy.extend_from_slice(&owner_bytes);
-//     entropy.extend_from_slice(&slot.to_le_bytes());
-//     entropy.extend_from_slice(&timestamp.to_le_bytes());
-//     entropy.extend_from_slice(&recent_block_hash[0..32]);
+    // 각 요소를 바이트 배열로 변환하여 결합
+    let mut entropy = Vec::new();
+    entropy.extend_from_slice(&owner_bytes);
+    entropy.extend_from_slice(&slot.to_le_bytes());
+    entropy.extend_from_slice(&timestamp.to_le_bytes());
+    entropy.extend_from_slice(&recent_block_hash[0..32]);
 
-//     // 여러 요소를 결합한 바이트 배열에 SHA256 해시 적용
-//     let result: Hash = hash(&entropy);
-//     let seed_bytes: [u8; 8] = result.as_ref()[0..8].try_into().unwrap();
-//     Ok(u64::from_le_bytes(seed_bytes))
-// }
+    // 여러 요소를 결합한 바이트 배열에 SHA256 해시 적용
+    let result: Hash = hash(&entropy);
+    let seed_bytes: [u8; 8] = result.as_ref()[0..8].try_into().unwrap();
+    Ok(u64::from_le_bytes(seed_bytes))
+}
 
 #[program]
 pub mod item {
@@ -251,10 +251,14 @@ pub mod item {
             slot, 
             block_time
         )?;
-    
+
+        ctx.accounts.code_account.reload()?;
         // 반환된 struct의 data 필드에서 seed1, seed2 추출
-        let seed1 = ctx.accounts.code_account.seed1;
-        let seed2 = ctx.accounts.code_account.seed2;
+        // let seed1 = ctx.accounts.code_account.seed1;
+        // let seed2 = ctx.accounts.code_account.seed2;
+        let seed1 = generate_seed(&ctx)?;
+        let seed2 = generate_seed(&ctx)?;
+
 
         msg!("COMBINED SEED 1 FOR CHOOSING GACHA: {}", seed1);
         msg!("COMBINED SEED 2 FOR CHOOSING IMAGE: {}", seed2);
@@ -384,8 +388,8 @@ pub struct RandomMintItem<'info> {
     #[account(init, payer = owner, space = 8 + 32 + (4 + 20) + (4 + 20) + (4 + 200) + (4 + 20) + 1)]
     pub item_account: Account<'info, ItemAccount>,
     /// CHECK: Recent blockhashes sysvar account
-    // #[account(address = anchor_lang::solana_program::sysvar::recent_blockhashes::ID)]
-    // pub recent_blockhashes: AccountInfo<'info>,
+    #[account(address = anchor_lang::solana_program::sysvar::recent_blockhashes::ID)]
+    pub recent_blockhashes: AccountInfo<'info>,
 
     #[account(mut)]
     pub db_account: Account<'info, game::state::DBaccount>,

@@ -110,6 +110,10 @@
           "signer": true
         },
         {
+          "name": "recent_blockhashes",
+          "address": "SysvarRecentB1ockHashes11111111111111111111"
+        },
+        {
           "name": "db_account",
           "writable": true
         },
