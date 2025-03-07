@@ -15,90 +15,148 @@ pub const GRADE_NAMES: [&str; NUM_GRADE] = [
 ];
 
 pub const GACHA_WEIGHTS: [[u64; NUM_GRADE]; NUM_GACHA] = [
-    [60, 25, 10, 4, 1, 0],  // 가챠 0: 가장 낮은 등급 (DEGENDARY 없음)
-    [55, 25, 10, 4, 4, 2],  // 가챠 1
-    [50, 25, 10, 4, 7, 4],  // 가챠 2
-    [45, 25, 10, 4, 9, 7],  // 가챠 3
-    [40, 25, 10, 4, 9, 12], // 가챠 4
-    [35, 25, 10, 4, 9, 17], // 가챠 5: 가장 높은 등급 (DEGENDARY 있음)
+    [510, 300, 100, 60, 30, 0],     // 가챠 0: 51.0%, 30.0%, 10.0%, 06.0%, 03.0%, 00.0%
+    [405, 360, 110, 80, 40, 5],     // 가챠 1: 40.5%, 36.0%, 11.0%, 08.0%, 04.0%, 00.5%
+    [280, 400, 150, 100, 60, 10],   // 가챠 2: 28.0%, 40.0%, 15.0%, 10.0%, 06.0%, 01.0%
+    [180, 250, 300, 150, 100, 20],  // 가챠 3: 18.0%, 25.0%, 30.0%, 15.0%, 10.0%, 02.0%
+    [20, 200, 400, 200, 150, 30],   // 가챠 4: 02.0%, 20.0%, 40.0%, 20.0%, 15.0%, 03.0%
+    [0, 50, 150, 400, 300, 100],    // 가챠 5: 00.0%, 05.0%, 15.0%, 40.0%, 30.0%, 10.0%
 ];
 
-pub const NORMAL_ITEMS: [(&str, &str, &str); NUM_IMAGES] = [
-    ("Normal Item Name 0001", "normal0001.png", "head"),
-    ("Normal Item Name 0002", "normal0002.png", "body"),
-    ("Normal Item Name 0003", "normal0003.png", "arms"),
-    ("Normal Item Name 0004", "normal0004.png", "legs"),
-    ("Normal Item Name 0005", "normal0005.png", "accessory"),
-    ("Normal Item Name 0006", "normal0006.png", "head"),
-    ("Normal Item Name 0007", "normal0007.png", "body"),
-    ("Normal Item Name 0008", "normal0008.png", "arms"),
-    ("Normal Item Name 0009", "normal0009.png", "legs"),
-    ("Normal Item Name 0010", "normal0010.png", "accessory"),
+pub static NORMAL_ITEMS: &[(&str, &str, &str, &str, &str, u64)] = &[
+    ("NORM_0001", "NORMAL", "Age of Ponzi", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/AgeofPonzi_head_common.png", "head", 10),
+    ("NORM_0002", "NORMAL", "Famous Fox ponzi", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/FamousFoxponzi_head_common.png", "head", 10),
+    ("NORM_0003", "NORMAL", "hypers", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/hypers_head_common.png", "head", 10),
+    ("NORM_0004", "NORMAL", "Juponter", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Juponter_head_common.png", "head", 10),
+    ("NORM_0005", "NORMAL", "NPC on ponzana", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/NPConponzana_head_common.png", "head", 10),
+    ("NORM_0006", "NORMAL", "oozi", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/oozi_head_common.png", "head", 10),
+    ("NORM_0007", "NORMAL", "Peebits", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Peebits_head_common.png", "head", 10),
+    ("NORM_0008", "NORMAL", "PNE1", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PNE1_head_common.png", "head", 10),
+    ("NORM_0009", "NORMAL", "Ponzi16z", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Ponzi16z_head_common.png", "head", 10),
+    ("NORM_0010", "NORMAL", "ponziside", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/ponziside_head_common.png", "head", 10),
+    ("NORM_0011", "NORMAL", "PonziTown.wtf", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PonziTown.wtf_head_common.png", "head", 10),
+    ("NORM_0012", "NORMAL", "Ponziverse", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Ponziverse_head_common.png", "head", 10),
+    ("NORM_0013", "NORMAL", "Poteora", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Ponziworld_head_common.png", "head", 10),
+    ("NORM_0014", "NORMAL", "Ponziworld", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Poteora_head_common.png", "head", 10),
+    ("NORM_0015", "NORMAL", "sproto ponzin", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/sprotoponzin_head_common.png", "head", 10),
+    ("NORM_0016", "NORMAL", "Yogaponzi", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Yogaponzi_head_common.png", "head", 10),
+    ("NORM_0017", "NORMAL", "Famous Fox Ponzi", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/FamousFoxPonzi_body_common.png", "body", 10),
+    ("NORM_0018", "NORMAL", "NPC on ponzana", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/NPConponzana1_body_common.png", "body", 10),
+    ("NORM_0019", "NORMAL", "NPC on ponzana", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/NPConponzana2_body_common.png", "body", 10),
+    ("NORM_0020", "NORMAL", "NPC on ponzana", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/NPConponzana3_body_common.png", "body", 10),
+    ("NORM_0021", "NORMAL", "NPC on ponzana", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/NPConponzana4_body_common.png", "body", 10),
+    ("NORM_0022", "NORMAL", "NPC on ponzana", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/NPConponzana5_body_common.png", "body", 10),
+    ("NORM_0023", "NORMAL", "NPC on ponzana", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/NPConponzana6_body_common.png", "body", 10),
+    ("NORM_0024", "NORMAL", "oozi", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/oozi_body_common.png", "body", 10),
+    ("NORM_0025", "NORMAL", "Peebits", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Peebits_body_common.png", "body", 10),
+    ("NORM_0026", "NORMAL", "Pizza Pinza", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PizzaPinza_body_common.png", "body", 10),
+    ("NORM_0027", "NORMAL", "Ponzi16z", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PonziTown.wtf_body_common.png", "body", 10),
+    ("NORM_0028", "NORMAL", "ponziside", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/ponziside_body_common.png", "body", 10),
+    ("NORM_0029", "NORMAL", "PonziTown.wtf", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PonziTown.wtf_body_common.png", "body", 10),
+    ("NORM_0030", "NORMAL", "PSC", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PSC_body_common.png", "body", 10),
+    ("NORM_0031", "NORMAL", "Juponter", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Juponter_arms_common.png", "arms", 10),
+    ("NORM_0032", "NORMAL", "Magicponzi", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Magicponzi_arms_common.png", "arms", 10),
+    ("NORM_0033", "NORMAL", "Oponzea gemesis", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Oponzeagemesis_arms_common.png", "arms", 10),
+    ("NORM_0034", "NORMAL", "PAKC", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PAKC_arms_common.png", "arms", 10),
+    ("NORM_0035", "NORMAL", "Pombo", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Pombo_arms_common.png", "arms", 10),
+    ("NORM_0036", "NORMAL", "Ponzimask", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Ponzimask_arms_common.png", "arms", 10),
+    ("NORM_0037", "NORMAL", "Poodles", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Poodles_arms_common.png", "arms", 10),
+    ("NORM_0038", "NORMAL", "Sancpom", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Sancpom_arms_common.png", "arms", 10),
 ];
 
-pub const RARE_ITEMS: [(&str, &str, &str); NUM_IMAGES] = [
-    ("Rare Item Name 0001", "rare0001.png", "head"),
-    ("Rare Item Name 0002", "rare0002.png", "body"),
-    ("Rare Item Name 0003", "rare0003.png", "arms"),
-    ("Rare Item Name 0004", "rare0004.png", "legs"),
-    ("Rare Item Name 0005", "rare0005.png", "accessory"),
-    ("Rare Item Name 0006", "rare0006.png", "head"),
-    ("Rare Item Name 0007", "rare0007.png", "body"),
-    ("Rare Item Name 0008", "rare0008.png", "arms"),
-    ("Rare Item Name 0009", "rare0009.png", "legs"),
-    ("Rare Item Name 0010", "rare0010.png", "accessory"),
+pub static RARE_ITEMS: &[(&str, &str, &str, &str, &str, u64)] = &[
+    ("RARE_0001", "RARE", "CyberPongz", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/CyberPongz_head_rare.png", "head", 100),
+    ("RARE_0002", "RARE", "Pondelion", "ipfs://bafybeibgg3nbuppcswctptabkm6auklchjztrui6wzofklpvxqtv5pvdli/Pondelion_head_rare.png", "head", 100),
+    ("RARE_0003", "RARE", "happy Ponzi", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/happyPonzi_head_rare.png", "head", 100),
+    ("RARE_0004", "RARE", "MPYC", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/MPYC_head_rare.png", "head", 100),
+    ("RARE_0005", "RARE", "NodePonkey", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/NodePonkey_head_rare.png", "head", 100),
+    ("RARE_0006", "RARE", "p00ts", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/p00ts_head_rare.png", "head", 100),
+    ("RARE_0007", "RARE", "Pammoth Overload", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PammothOverload_head_rare.png", "head", 100),
+    ("RARE_0008", "RARE", "PanzBear", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PanzBear_head_rare.png", "head", 100),
+    ("RARE_0009", "RARE", "Pizza Pinza", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PizzaPinza_head_rare.png", "head", 100),
+    ("RARE_0010", "RARE", "PONSORIANS", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PONSORIANS_head_rare.png", "head", 100),
+    ("RARE_0011", "RARE", "Ponzikids", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Ponzikids_head_rare.png", "head", 100),
+    ("RARE_0012", "RARE", "Poonbirds", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Poonbirds_head_rare.png", "head", 100),
+    ("RARE_0013", "RARE", "PSC", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PSC_head_rare.png", "head", 100),
+    ("RARE_0014", "RARE", "Sloth Ponzi Society", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/SlothPonziSociety_head_rare.png", "head", 100),
+    ("RARE_0015", "RARE", "ponsorian", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/ponsorian_Body_rare.png", "body", 100),
+    ("RARE_0016", "RARE", "Lil Ponzies", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/LilPonzies_Body_rare.png", "body", 100),
+    ("RARE_0017", "RARE", "Pammoth Overload", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PammothOverload_Body_rare.png", "body", 100),
+    ("RARE_0018", "RARE", "Panz Bear", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PanzBear_Body_unique.png", "body", 100),
+    ("RARE_0019", "RARE", "Ponz", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/ponz_Body_rare.png", "body", 100),
+    ("RARE_0020", "RARE", "Pongod", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Pongod_Body_rare.png", "body", 100),
+    ("RARE_0021", "RARE", "Potatonzi", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Potatonzi_Body_rare.png", "body", 100),
+    ("RARE_0022", "RARE", "Sloth Ponzi Society", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/SlothPonziSociety_Body_rare.png", "body", 100),
+    ("RARE_0023", "RARE", "Oponzea gemesis", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Oponzeagemesis_arms_rare.png", "arms", 100),
+    ("RARE_0024", "RARE", "Peanz", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Peanz_arms_rare.png", "arms", 100),
+    ("RARE_0025", "RARE", "pepeland", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/pepeland_arms_rare.png", "arms", 100),
+    ("RARE_0026", "RARE", "Ponzana phone1 Saga", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Ponzanaphone1Saga_arms_rare.png", "arms", 100),
+    ("RARE_0027", "RARE", "ponzipaw", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/ponzipaw_arms_rare.png", "arms", 100),
+    ("RARE_0028", "RARE", "Ponzi-X", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PonziX_arms_rare.png", "arms", 100),
+    ("RARE_0029", "RARE", "Poodles", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Poodles_arms_rare", "arms", 100),
+    ("RARE_0030", "RARE", "Porca", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Porca_arms_rare.png", "arms", 100),
+    ("RARE_0031", "RARE", "PonziStone", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PonziStone_arms_rare.png", "arms", 100),
+    ("RARE_0032", "RARE", "Yogaponz", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Yogaponz_arms_rare.png", "arms", 100),
 ];
 
-pub const EPIC_ITEMS: [(&str, &str, &str); NUM_IMAGES] = [
-    ("Epic Item Name 0001", "epic0001.png", "head"),
-    ("Epic Item Name 0002", "epic0002.png", "body"),
-    ("Epic Item Name 0003", "epic0003.png", "arms"),
-    ("Epic Item Name 0004", "epic0004.png", "legs"),
-    ("Epic Item Name 0005", "epic0005.png", "accessory"),
-    ("Epic Item Name 0006", "epic0006.png", "head"),
-    ("Epic Item Name 0007", "epic0007.png", "body"),
-    ("Epic Item Name 0008", "epic0008.png", "arms"),
-    ("Epic Item Name 0009", "epic0009.png", "legs"),
-    ("Epic Item Name 0010", "epic0010.png", "accessory"),
+pub static EPIC_ITEMS: &[(&str, &str, &str, &str, &str, u64)] = &[
+    ("EPIC_0001", "EPIC", "Caponzi", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Caponzi_head_unique.png", "head", 1500),
+    ("EPIC_0002", "EPIC", "Keungzi", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Keungzi_head_unique.png", "head", 1500),
+    ("EPIC_0003", "EPIC", "Moca vs ponzi", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Mocavsponzi_head_unique.png", "head", 1500),
+    ("EPIC_0004", "EPIC", "PonzBear", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Pongod_head_unique.png", "head", 1500),
+    ("EPIC_0005", "EPIC", "Pongod", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PonzBear_head_unique.png", "head", 1500),
+    ("EPIC_0006", "EPIC", "Ponzicat", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Ponzicat_head_unique.png", "head", 1500),
+    ("EPIC_0007", "EPIC", "Ponzi-X", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PonziX_head_unique.png", "head", 1500),
+    ("EPIC_0008", "EPIC", "SMP", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/SMP_head_unique.png", "head", 1500),
+    ("EPIC_0009", "EPIC", "BPYC", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/BPYC_Body_unique.png", "body", 1500),
+    ("EPIC_0010", "EPIC", "Moca vs Ponzi", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/MocavsPonzi_Body_unique.png", "body", 1500),
+    ("EPIC_0011", "EPIC", "Ponz Bear", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PonzBear_Body_unique.png", "body", 1500),
+    ("EPIC_0012", "EPIC", "Azukey", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Azukey_arms_unique.png", "arms", 1500),
+    ("EPIC_0013", "EPIC", "Backponzi", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Backponzi_arms_unique.png", "arms", 1500),
+    ("EPIC_0014", "EPIC", "CUPIS", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/CUPIS_arms_unique.png", "arms", 1500),
+    ("EPIC_0015", "EPIC", "Pothir edge ", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Pothiredge_arms_unique.png", "arms", 1500),
+    ("EPIC_0016", "EPIC", "Ponzana phone2 Seeker", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Ponzanaphone2Seeker_arms_unique.png", "arms", 1500),
+    ("EPIC_0017", "EPIC", "Ponzi-X", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PonziX_arms_unique.png", "arms", 1500),
 ];
 
-pub const UNIQUE_ITEMS: [(&str, &str, &str); NUM_IMAGES] = [
-    ("Unique Item Name 0001", "unique0001.png", "head"),
-    ("Unique Item Name 0002", "unique0002.png", "body"),
-    ("Unique Item Name 0003", "unique0003.png", "arms"),
-    ("Unique Item Name 0004", "unique0004.png", "legs"),
-    ("Unique Item Name 0005", "unique0005.png", "accessory"),
-    ("Unique Item Name 0006", "unique0006.png", "head"),
-    ("Unique Item Name 0007", "unique0007.png", "body"),
-    ("Unique Item Name 0008", "unique0008.png", "arms"),
-    ("Unique Item Name 0009", "unique0009.png", "legs"),
-    ("Unique Item Name 0010", "unique0010.png", "accessory"),
+pub static UNIQUE_ITEMS: &[(&str, &str, &str, &str, &str, u64)] = &[
+    ("UNIQ_0001", "UNIQUE", "Madlabs", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Madlabs_head_eipc.png", "head", 20000),
+    ("UNIQ_0002", "UNIQUE", "Milboy Maker", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/MilboyMaker_head_eipc.png", "head", 20000),
+    ("UNIQ_0003", "UNIQUE", "OMP", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/OMP_head_eipc.png", "head", 20000),
+    ("UNIQ_0004", "UNIQUE", "Ponzicat", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Ponzicat_head_eipc.png", "head", 20000),
+    ("UNIQ_0005", "UNIQUE", "Ponzi-X", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PonziX_head_eipc.png", "head", 20000),
+    ("UNIQ_0006", "UNIQUE", "Poodles", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Poodles_head_eipc.png", "head", 20000),
+    ("UNIQ_0007", "UNIQUE", "Madlabs", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Madlabs_body_epic.png", "body", 20000),
+    ("UNIQ_0008", "UNIQUE", "Milboy Maker", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Milboy_body_epic.png", "body", 20000),
+    ("UNIQ_0009", "UNIQUE", "Azukey", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Azukey_arms_epic.png", "arms", 20000),
+    ("UNIQ_0010", "UNIQUE", "Chromie Squiggle", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/ChromieSquiggle_arms_epic.png", "arms", 20000),
+    ("UNIQ_0011", "UNIQUE", "Madlabs  우산", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Madlabs_arms_epic.png", "arms", 20000),
+    ("UNIQ_0012", "UNIQUE", "MPYC", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/MPYC_arms_epic.png", "arms", 20000),
+    ("UNIQ_0013", "UNIQUE", "phontom", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/phontom_arms_epic.png", "arms", 20000),
+    ("UNIQ_0014", "UNIQUE", "Pudgy Ponzies Rods", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PudgyPonziesRods_arms_epic.png", "arms", 20000),
 ];
 
-pub const LEGENDARY_ITEMS: [(&str, &str, &str); NUM_IMAGES] = [
-    ("Legendary Item Name 0001", "legendary0001.png", "head"),
-    ("Legendary Item Name 0002", "legendary0002.png", "body"),
-    ("Legendary Item Name 0003", "legendary0003.png", "arms"),
-    ("Legendary Item Name 0004", "legendary0004.png", "legs"),
-    ("Legendary Item Name 0005", "legendary0005.png", "accessory"),
-    ("Legendary Item Name 0006", "legendary0006.png", "head"),
-    ("Legendary Item Name 0007", "legendary0007.png", "body"),
-    ("Legendary Item Name 0008", "legendary0008.png", "arms"),
-    ("Legendary Item Name 0009", "legendary0009.png", "legs"),
-    ("Legendary Item Name 0010", "legendary0010.png", "accessory"),
+pub static LEGENDARY_ITEMS: &[(&str, &str, &str, &str, &str, u64)] = &[
+    ("LEGEN_0001", "LEGENDARY", "Azukey", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Azukey_head_legen.png", "head", 100000),
+    ("LEGEN_0002", "LEGENDARY", "BPYC", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/BPYC_head_legen.png", "head", 100000),
+    ("LEGEN_0003", "LEGENDARY", "CryptoPonzies", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/CryptoPonzies1_head_legen.png", "head", 100000),
+    ("LEGEN_0004", "LEGENDARY", "CryptoPonzies", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/CryptoPonzies2_head_legen.png", "head", 100000),
+    ("LEGEN_0005", "LEGENDARY", "Madlabs", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Madlabs_head_legen.png", "head", 100000),
+    ("LEGEN_0006", "LEGENDARY", "Pudgy Ponzies", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Pudgy Ponzies_head_legen.png", "head", 100000),
+    ("LEGEN_0007", "LEGENDARY", "Poodles", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Poodles_head_legen.png", "head", 100000),
+    ("LEGEN_0008", "LEGENDARY", "Azukey", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Azukey_Body_legen.png", "body", 100000),
+    ("LEGEN_0009", "LEGENDARY", "Pudgy Ponzies", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PudgyPonzies_Body_legen.png", "body", 100000),
+    ("LEGEN_0010", "LEGENDARY", "Paito ", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Ponzito_arms_legen.png", "arms", 100000),
+    ("LEGEN_0011", "LEGENDARY", "Ponzi.fun ", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Ponzi.fun_arms_legen.png", "arms", 100000),
 ];
 
-pub const DEGENDARY_ITEMS: [(&str, &str, &str); NUM_IMAGES] = [
-    ("Degendary Item Name 0001", "degendary0001.png", "head"),
-    ("Degendary Item Name 0002", "degendary0002.png", "body"),
-    ("Degendary Item Name 0003", "degendary0003.png", "arms"),
-    ("Degendary Item Name 0004", "degendary0004.png", "legs"),
-    ("Degendary Item Name 0005", "degendary0005.png", "accessory"),
-    ("Degendary Item Name 0006", "degendary0006.png", "head"),
-    ("Degendary Item Name 0007", "degendary0007.png", "body"),
-    ("Degendary Item Name 0008", "degendary0008.png", "arms"),
-    ("Degendary Item Name 0009", "degendary0009.png", "legs"),
-    ("Degendary Item Name 0010", "degendary0010.png", "accessory"),
+pub static DEGENDARY_ITEMS: &[(&str, &str, &str, &str, &str, u64)] = &[
+    ("DEGEN_0001", "DEGENDARY", "Azukey ", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Azukey_head_degen.png", "head", 5000000),
+    ("DEGEN_0002", "DEGENDARY", "CryptoPonzies ", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/CryptoPonzies_head_degen.png", "head", 5000000),
+    ("DEGEN_0003", "DEGENDARY", "Madlabs ", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Madlabs_head_degen.png", "head", 5000000),
+    ("DEGEN_0004", "DEGENDARY", "Pudgy Ponzies ", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/PudgyPonzies_head_degen.png", "head", 5000000),
+    ("DEGEN_0005", "DEGENDARY", "Madlabs", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/Madlabs_body_degen.png", "body", 5000000),
+    ("DEGEN_0006", "DEGENDARY", "CryptoPonzies", "ipfs://bafybeicjd2mozoo7sjtddf67tkenld5gk2sinwtgg6jakhblp6i56dcla4/CryptoPonzies_arms_degen.png", "arms", 5000000),
 ];
 
 // pub fn generate_seed(ctx: &Context<RandomMintItem>) -> Result<u64> {
@@ -246,7 +304,8 @@ pub mod item {
         // let seed2 = generate_seed(&ctx)?;
         let item_index = (seed2 % items.len() as u64) as usize;
 
-        let (name, uri, part) = items[item_index];
+        // let (name, uri, part) = items[item_index];
+        let (_key, _grade, name, uri, part, _cost) = items[item_index];
         let item_account = &mut ctx.accounts.item_account;
         item_account.owner = ctx.accounts.owner.key();
         item_account.grade = grade.to_string();
@@ -292,8 +351,8 @@ pub mod item {
 pub struct CreateItemAccount<'info> {
     #[account(mut)]
     pub owner: Signer<'info>,
-    // discriminator(8) + owner(32) + grade(4 + 20) + name(4 + 20) + uri(4 + 20) + part(4 + 20) + equipped(1)
-    #[account(init, payer = owner, space = 8 + 32 + (4 + 20) + (4 + 20) + (4 + 20) + (4 + 20) + 1)]
+    // discriminator(8) + owner(32) + grade(4 + 20) + name(4 + 20) + uri(4 + 200) + part(4 + 20) + equipped(1)
+    #[account(init, payer = owner, space = 8 + 32 + (4 + 20) + (4 + 20) + (4 + 200) + (4 + 20) + 1)]
     pub item_account: Account<'info, ItemAccount>,
     pub system_program: Program<'info, System>,
 }
@@ -320,8 +379,8 @@ pub struct DeleteItemAccount<'info> {
 pub struct RandomMintItem<'info> {
     #[account(mut)]
     pub owner: Signer<'info>,
-    // discriminator(8) + owner(32) + grade(4 + 20) + name(4 + 20) + uri(4 + 20) + part(4 + 20) + equipped(1)
-    #[account(init, payer = owner, space = 8 + 32 + (4 + 20) + (4 + 20) + (4 + 20) + (4 + 20) + 1)]
+    // discriminator(8) + owner(32) + grade(4 + 20) + name(4 + 20) + uri(4 + 200) + part(4 + 20) + equipped(1)
+    #[account(init, payer = owner, space = 8 + 32 + (4 + 20) + (4 + 20) + (4 + 200) + (4 + 20) + 1)]
     pub item_account: Account<'info, ItemAccount>,
     /// CHECK: Recent blockhashes sysvar account
     // #[account(address = anchor_lang::solana_program::sysvar::recent_blockhashes::ID)]
