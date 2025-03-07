@@ -15,8 +15,8 @@ export function NftCardDetail({ nft, detailPosition, selectedNft, nfts }: {
                 maxWidth: '250px'
             }}
         >
-            <p className="font-bold text-sm">{selectedNft.account.data.parsed.info.name || `전설의 아이템 #${nfts.indexOf(selectedNft) + 1}`}</p>
-            <p className="text-xs mt-1">{selectedNft.account.data.parsed.info.description || "희귀한 전설의 아이템입니다"}</p>
+            <p className="font-bold text-sm">{selectedNft.account.name || `전설의 아이템 #${nfts.indexOf(selectedNft) + 1}`}</p>
+            <p className="text-xs mt-1">{selectedNft.account.description || "희귀한 전설의 아이템입니다"}</p>
             {selectedNft.attributes && (
                 <div className="mt-2">
                     <p className="text-xs font-semibold">속성:</p>

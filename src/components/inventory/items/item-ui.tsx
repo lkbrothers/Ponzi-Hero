@@ -62,7 +62,7 @@ export function Inventory({ tokens, nfts, equippedItems, setEquippedItems }: {
 
     const isEquipped = (nft: any) => {
         return Object.values(equippedItems).some(item => 
-            item && item.account.data.parsed.info.mint === nft.account.data.parsed.info.mint
+            item && item.account.equipped === nft.account.equipped
         );
     };
     
@@ -101,8 +101,8 @@ export function Inventory({ tokens, nfts, equippedItems, setEquippedItems }: {
                                 <div className="flex flex-col items-center justify-center w-full h-full">
                                     <Frame nft={nft} />
                                     <img 
-                                        src={nft.account.data.parsed.info.image || nftimg.src} 
-                                        alt={nft.account.data.parsed.info.name || `아이템 #${i + 1 + currentPage * itemsPerPage}`}
+                                        src={'images/'+nft.account.uri || nftimg.src} 
+                                        alt={nft.account.name || `아이템 #${i + 1 + currentPage * itemsPerPage}`}
                                         className="w-[90%] h-[90%] object-cover z-10"
                                     />
                                 </div>
@@ -158,11 +158,11 @@ export function Inventory({ tokens, nfts, equippedItems, setEquippedItems }: {
 }
 
 const Frame = ({ nft }: { nft: any }) => {
-    const grade = nft.account.data.parsed.info.grade;
+    const grade = nft.account.grade;
     let frameSrc;
     let gradeText;
     
-    if (grade === 'common') {
+    if (grade === 'common' || 'NORMAL') {
         frameSrc = commonFrame.src;
         gradeText = 'Common';
     } else if (grade === 'Rare') {

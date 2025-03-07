@@ -13,7 +13,7 @@ import { WalletInfo } from './wallet/wallet-info'
 
 // 더미 데이터 임포트
 import { DUMMY_NFTS } from './data/dummy-data'
-
+import { useInventoryItems } from './items/item-data-access';
 export default function Page() {
   const { connected, publicKey } = useWallet()
   const { connection } = useConnection()
@@ -26,6 +26,8 @@ export default function Page() {
     'L-Hand': null,
     'R-Hand': null
   })
+
+  const { fetchUserItems } = useInventoryItems();
 
   useEffect(() => {
     if (!connected || !publicKey) return
@@ -44,6 +46,9 @@ export default function Page() {
       setTokens(tokenAccounts.value)
 
       // 개발 환경에서는 더미 NFT 데이터 사용
+      const userItems = await fetchUserItems();
+      console.log("userItems", userItems);
+      setNfts(userItems);
       setNfts(DUMMY_NFTS)
     }
 

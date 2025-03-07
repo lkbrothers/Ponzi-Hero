@@ -23,7 +23,7 @@ export function UiLayout({ children, links }: { children: ReactNode; links: { la
           navbar py-5  flex-col md:flex-row space-y-2 md:space-y-0 justify-around
           h-[20vh]
       ">
-        {/* {scoreBoard()} */}
+        {scoreBoard()}
         <div className="flex justify-center items-center">
           <img src={mainTitle.src} alt="mainTitle" className="h-24 object-fit mx-auto" />
         </div>
@@ -160,18 +160,14 @@ const scoreBoard = () => {
   const { buttonType, setButtonType } = useButtonStore();
   
   return (
-    <div className="w-1/4 border-2 border-green-500 rounded-xl">
-    <div className="flex-none w-full space-x-2 bg-black text-white border-2 border-red-500 border-green-500 rounded-xl">
+    <div className="w-1/4">
+    <div className="flex-none w-full bg-black text-white ">
       <div className="flex flex-col w-full items-center gap-2 text-2xl py-2 px-4">
         <div className="flex flex-row w-full justify-between gap-2">
-          <p>SCORE</p>
+          <p>CREDIT</p>
           <p>100</p>
         </div>
-        <div className="flex flex-row w-full justify-between gap-2">
-          <p>NFT</p>
-          <p>100</p>
-        </div>
-        <div className="flex flex-row w-full justify-between gap-2 mb-2">
+        {/* <div className="flex flex-row w-full justify-between gap-2 mb-2">
           <p>BUTTON</p>
           <div className="dropdown dropdown-end">
             <label tabIndex={0} className="btn btn-sm m-1">{buttonType}</label>
@@ -181,7 +177,7 @@ const scoreBoard = () => {
               <li><a onClick={() => setButtonType('GOLD')}>GOLD</a></li>
             </ul>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
     </div>

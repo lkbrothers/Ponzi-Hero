@@ -12,6 +12,7 @@ import { useGachaProgram, GRADE_NAMES, VALID_IMAGES, NUM_GACHA } from './gacha-d
 import confetti from 'canvas-confetti'
 
 import gachaImg from '../../assets/gachaBtnNoBg.png'
+import gachaPushedImg from '../../assets/gachaBtnPushedNoBg.png'
 import nftimg from '../../assets/nft.png'
 import nftimg2 from '../../assets/nft2.png'
 import nftimg3 from '../../assets/nft3.png'
@@ -87,6 +88,8 @@ export function GachaCreate() {
     if (connected) {
       try {
         // 크레딧으로 가챠 뽑기
+        setShowModal(true)
+
         const result = await drawGacha.mutateAsync({ 
           gachaLevel: selectedGachaLevel,
           cost: gachaCosts[selectedGachaLevel]
@@ -125,7 +128,6 @@ export function GachaCreate() {
           mint: result.itemAccount.publicKey.toString()
         }
         setGachaResult(nftResult)
-        setShowModal(true)
         
         // 색종이 효과 추가
         confetti({
@@ -135,6 +137,8 @@ export function GachaCreate() {
         })
       } catch (error) {
         toast.error('가챠 뽑기에 실패했습니다. 크레딧이 부족할 수 있습니다.')
+        setShowModal(false)
+
         console.error(error)
       }
     }
@@ -168,7 +172,7 @@ export function GachaCreate() {
           setDbAccount={setDbAccount}
           setCreditAccount={setCreditAccount}
         />
-        <LeftMenu isGacha={isGacha} isInventory={isInventory} isRanking={isRanking} setIsGacha={setIsGacha} setIsInventory={setIsInventory} setIsRanking={setIsRanking} connected={connected} mintItem={mintItem} handleGachaClick={handleGachaClick} setGachaResult={setGachaResult}/>
+        <LeftMenu isGacha={isGacha} isInventory={isInventory} isRanking={isRanking} setIsGacha={setIsGacha} setIsInventory={setIsInventory} setIsRanking={setIsRanking} connected={connected} mintItem={mintItem} handleGachaClick={handleGachaClick} setGachaResult={setGachaResult} showModal={showModal}/>
       </div>
       
       {/* 모달 코드 제거 */}
@@ -244,7 +248,7 @@ export function GachaList() {
   )
 }
 
-const LeftMenu = ({isGacha, isInventory, isRanking, setIsGacha, setIsInventory, setIsRanking, connected, mintItem, handleGachaClick, setGachaResult}: {isGacha: boolean, isInventory: boolean, isRanking: boolean, setIsGacha: (isGacha: boolean) => void, setIsInventory: (isInventory: boolean) => void, setIsRanking: (isRanking: boolean) => void, connected: boolean, mintItem: any, handleGachaClick: () => void, setGachaResult: (gachaResult: any ) => void}) => {
+const LeftMenu = ({isGacha, isInventory, isRanking, setIsGacha, setIsInventory, setIsRanking, connected, mintItem, handleGachaClick, setGachaResult, showModal}: {isGacha: boolean, isInventory: boolean, isRanking: boolean, setIsGacha: (isGacha: boolean) => void, setIsInventory: (isInventory: boolean) => void, setIsRanking: (isRanking: boolean) => void, connected: boolean, mintItem: any, handleGachaClick: () => void, setGachaResult: (gachaResult: any ) => void, showModal: boolean}) => {
   return (
     <div className="flex flex-row w-full h-[25vh] items-center justify-around gap-10">
     {/* {Array.from({ length: NUM_GACHA }).map((_, index) => (
@@ -267,9 +271,9 @@ const LeftMenu = ({isGacha, isInventory, isRanking, setIsGacha, setIsInventory, 
             disabled={!connected || mintItem.isPending}
             onClick={handleGachaClick}
           >
-            {connected ? 
+              {connected ? 
 
-                <img src={gachaImg.src} alt="gacha" className="w-full object-cover" />
+                showModal ? <img src={gachaPushedImg.src} alt="gacha" className="w-full object-cover" /> : <img src={gachaImg.src} alt="gacha" className="w-full object-cover" />
               : '지갑을 연결해주세요'}
           </button>
         </div>

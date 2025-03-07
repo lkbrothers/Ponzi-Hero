@@ -20,25 +20,29 @@ export function SelectedNftInteraction({
     setEquippedItems: (items: {[key:string]: any}) => void
 }) {
     const handleEquip = () => {
-        const type = selectedClickNft.account.data.parsed.info.type;
+        const type = selectedClickNft.account.part;
         setEquippedItems({
             ...equippedItems,
             [type]: selectedClickNft
         });
+
+        //equip 트랜잭션 실행
         setShowClickDetail(false);
     };
 
     const handleUnequip = () => {
-        const type = selectedClickNft.account.data.parsed.info.type;
+        const type = selectedClickNft.account.part;
         setEquippedItems({
             ...equippedItems,
             [type]: null
         });
+
+        //unequip 트랜잭션 실행
         setShowClickDetail(false);
     };
 
     const isEquipped = Object.values(equippedItems).some(item => 
-        item && item.account.data.parsed.info.mint === selectedClickNft.account.data.parsed.info.mint
+        item && item.account.equipped === selectedClickNft.account.equipped
     );
 
     return (
@@ -46,15 +50,15 @@ export function SelectedNftInteraction({
             <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
                 <div className="flex items-center gap-4 mb-4">
                     <img 
-                        src={selectedClickNft.account.data.parsed.info.image || nftimg.src}
+                        src={selectedClickNft.account.uri || nftimg.src}
                         alt="NFT"
                         className="w-24 h-24 object-cover rounded"
                     />
                     <div>
-                        <h3 className="text-xl font-bold">{selectedClickNft.account.data.parsed.info.name || `전설의 아이템 #${nfts.indexOf(selectedClickNft) + 1}`}</h3>
-                        <p className="text-sm text-gray-600">{selectedClickNft.account.data.parsed.info.description}</p>
-                        <p className="text-sm text-gray-600">등급: {selectedClickNft.account.data.parsed.info.grade}</p>
-                        <p className="text-sm text-gray-600">타입: {selectedClickNft.account.data.parsed.info.type}</p>
+                        <h3 className="text-xl font-bold">{selectedClickNft.account.name || `전설의 아이템 #${nfts.indexOf(selectedClickNft) + 1}`}</h3>
+                        <p className="text-sm text-gray-600">{selectedClickNft.account.description}</p>
+                        <p className="text-sm text-gray-600">등급: {selectedClickNft.account.grade}</p>
+                        <p className="text-sm text-gray-600">타입: {selectedClickNft.account.part}</p>
                     </div>
                 </div>
                 

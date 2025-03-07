@@ -5,534 +5,236 @@ import nftimg3 from '../../../assets/nft3.png'
 export const DUMMY_NFTS = [
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "ABCD1234",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg2.src,
-            grade: 'L',
-            description: '크립토 펑크의 머리',
-            type:'Head'
-          },
-        }
-      }
+      uri: 'nft.png',
+      mint: 'MINT0001',
+      grade: 'Common',
+      part: 'Head',
+      equipped: false
     }
   },
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "EFGH5678",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg.src,
-            grade:'Epic',
-            description: '에일리언 쿨캣',
-            type:'Head'
-          }
-        }
-      }
+      uri: 'images/nft.png',
+      mint: 'MINT0002',
+      grade: 'Uncommon',
+      part: 'Body',
+      equipped: false
     }
   },
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "IJKL9012",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg3.src,
-            grade:'Rare',
-            description: '밈랜드 포테토즈 몸몸',
-            type:'Body'
-          }
-        }
-      }
+      uri: 'images/nft.png',
+      mint: 'MINT0003',
+      grade: 'Rare',
+      part: 'L-Hand',
+      equipped: false
     }
   },
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "IJKL9012",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg3.src,
-            grade:'Rare',
-            description: '밈랜드 포테토즈 몸몸',
-            type:'Body'
-          }
-        }
-      }
+      uri: 'images/nft.png',
+      mint: 'MINT0004',
+      grade: 'Epic',
+      part: 'R-Hand',
+      equipped: false
     }
   },
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "ABCD1234",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg2.src,
-            grade: 'L',
-            description: '크립토 펑크의 머리',
-            type:'Head'
-          },
-        }
-      }
+      uri: nftimg3.src,
+      mint: 'MINT0005',
+      grade: 'Legendary',
+      part: 'Head',
+      equipped: false
     }
   },
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "EFGH5678",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg.src,
-            grade:'Epic',
-            description: '에일리언 쿨캣',
-            type:'Head'
-          }
-        }
-      }
+      uri: nftimg3.src,
+      mint: 'MINT0006',
+      grade: 'Common',
+      part: 'Body',
+      equipped: false
     }
   },
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "IJKL9012",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg3.src,
-            grade:'Rare',
-            description: '밈랜드 포테토즈 몸몸',
-            type:'Body'
-          }
-        }
-      }
+      uri: nftimg2.src,
+      mint: 'MINT0007',
+      grade: 'Uncommon',
+      part: 'L-Hand',
+      equipped: false
     }
   },
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "IJKL9012",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg3.src,
-            grade:'Rare',
-            description: '밈랜드 포테토즈 몸몸',
-            type:'Body'
-          }
-        }
-      }
+      uri: nftimg.src,
+      mint: 'MINT0008',
+      grade: 'Rare',
+      part: 'R-Hand',
+      equipped: false
     }
   },
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "ABCD1234",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg2.src,
-            grade: 'L',
-            description: '크립토 펑크의 머리',
-            type:'Head'
-          },
-        }
-      }
+      uri: nftimg3.src,
+      mint: 'MINT0009',
+      grade: 'Epic',
+      part: 'Head',
+      equipped: false
     }
   },
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "EFGH5678",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg.src,
-            grade:'Epic',
-            description: '에일리언 쿨캣',
-            type:'Head'
-          }
-        }
-      }
+      uri: nftimg3.src,
+      mint: 'MINT0010',
+      grade: 'Legendary',
+      part: 'Body',
+      equipped: false
     }
   },
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "IJKL9012",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg3.src,
-            grade:'Rare',
-            description: '밈랜드 포테토즈 몸몸',
-            type:'Body'
-          }
-        }
-      }
+      uri: nftimg2.src,
+      mint: 'MINT0011',
+      grade: 'Common',
+      part: 'L-Hand',
+      equipped: false
     }
   },
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "IJKL9012",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg3.src,
-            grade:'Rare',
-            description: '밈랜드 포테토즈 몸몸',
-            type:'Body'
-          }
-        }
-      }
+      uri: nftimg.src,
+      mint: 'MINT0012',
+      grade: 'Uncommon',
+      part: 'R-Hand',
+      equipped: false
     }
   },
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "ABCD1234",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg2.src,
-            grade: 'L',
-            description: '크립토 펑크의 머리',
-            type:'Head'
-          },
-        }
-      }
+      uri: nftimg3.src,
+      mint: 'MINT0013',
+      grade: 'Rare',
+      part: 'Head',
+      equipped: false
     }
   },
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "EFGH5678",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg.src,
-            grade:'Epic',
-            description: '에일리언 쿨캣',
-            type:'Head'
-          }
-        }
-      }
+      uri: nftimg3.src,
+      mint: 'MINT0014',
+      grade: 'Epic',
+      part: 'Body',
+      equipped: false
     }
   },
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "IJKL9012",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg3.src,
-            grade:'Rare',
-            description: '밈랜드 포테토즈 몸몸',
-            type:'Body'
-          }
-        }
-      }
+      uri: nftimg2.src,
+      mint: 'MINT0015',
+      grade: 'Legendary',
+      part: 'L-Hand',
+      equipped: false
     }
   },
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "IJKL9012",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg3.src,
-            grade:'Rare',
-            description: '밈랜드 포테토즈 몸몸',
-            type:'Body'
-          }
-        }
-      }
+      uri: nftimg.src,
+      mint: 'MINT0016',
+      grade: 'Common',
+      part: 'R-Hand',
+      equipped: false
     }
   },
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "ABCD1234",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg2.src,
-            grade: 'L',
-            description: '크립토 펑크의 머리',
-            type:'Head'
-          },
-        }
-      }
+      uri: nftimg3.src,
+      mint: 'MINT0017',
+      grade: 'Uncommon',
+      part: 'Head',
+      equipped: false
     }
   },
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "EFGH5678",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg.src,
-            grade:'Epic',
-            description: '에일리언 쿨캣',
-            type:'Head'
-          }
-        }
-      }
+      uri: nftimg3.src,
+      mint: 'MINT0018',
+      grade: 'Rare',
+      part: 'Body',
+      equipped: false
     }
   },
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "IJKL9012",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg3.src,
-            grade:'Rare',
-            description: '밈랜드 포테토즈 몸몸',
-            type:'Body'
-          }
-        }
-      }
+      uri: nftimg2.src,
+      mint: 'MINT0019',
+      grade: 'Epic',
+      part: 'L-Hand',
+      equipped: false
     }
   },
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "IJKL9012",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg3.src,
-            grade:'Rare',
-            description: '밈랜드 포테토즈 몸몸',
-            type:'Body'
-          }
-        }
-      }
+      uri: nftimg.src,
+      mint: 'MINT0020',
+      grade: 'Legendary',
+      part: 'R-Hand',
+      equipped: false
     }
   },
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "ABCD1234",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg2.src,
-            grade: 'L',
-            description: '크립토 펑크의 머리',
-            type:'Head'
-          },
-        }
-      }
+      uri: nftimg3.src,
+      mint: 'MINT0021',
+      grade: 'Common',
+      part: 'Head',
+      equipped: false
     }
   },
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "EFGH5678",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg.src,
-            grade:'Epic',
-            description: '에일리언 쿨캣',
-            type:'Head'
-          }
-        }
-      }
+      uri: nftimg3.src,
+      mint: 'MINT0022',
+      grade: 'Uncommon',
+      part: 'Body',
+      equipped: false
     }
   },
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "IJKL9012",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg3.src,
-            grade:'Rare',
-            description: '밈랜드 포테토즈 몸몸',
-            type:'Body'
-          }
-        }
-      }
+      uri: nftimg2.src,
+      mint: 'MINT0023',
+      grade: 'Rare',
+      part: 'L-Hand',
+      equipped: false
     }
   },
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "IJKL9012",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg3.src,
-            grade:'Rare',
-            description: '밈랜드 포테토즈 몸몸',
-            type:'Body'
-          }
-        }
-      }
+      uri: nftimg.src,
+      mint: 'MINT0024',
+      grade: 'Epic',
+      part: 'R-Hand',
+      equipped: false
     }
   },
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "ABCD1234",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg2.src,
-            grade: 'L',
-            description: '크립토 펑크의 머리',
-            type:'Head'
-          },
-        }
-      }
+      uri: nftimg3.src,
+      mint: 'MINT0025',
+      grade: 'Legendary',
+      part: 'Head',
+      equipped: false
     }
   },
   {
     account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "EFGH5678",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg.src,
-            grade:'Epic',
-            description: '에일리언 쿨캣',
-            type:'Head'
-          }
-        }
-      }
-    }
-  },
-  {
-    account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "IJKL9012",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg3.src,
-            grade:'Rare',
-            description: '밈랜드 포테토즈 몸몸',
-            type:'Body'
-          }
-        }
-      }
-    }
-  },
-  {
-    account: {
-      data: {
-        parsed: {
-          info: {
-            mint: "IJKL9012",
-            tokenAmount: {
-              uiAmount: 1,
-              decimals: 0
-            },
-            image: nftimg3.src,
-            grade:'Rare',
-            description: '밈랜드 포테토즈 몸몸',
-            type:'Body'
-          }
-        }
-      }
+      uri: nftimg3.src,
+      mint: 'MINT0026',
+      grade: 'Common',
+      part: 'Body',
+      equipped: false
     }
   },
 ]
