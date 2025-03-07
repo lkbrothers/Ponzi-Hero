@@ -81,7 +81,7 @@ describe("shop", () => {
 
     it("EXCHANGE CREDIT TO NFT ITEM TEST", async () => {
         // 테스트용 Credit Account 수정
-        await creditProgram.methods.updateCreditAccount(new anchor.BN(1000))
+        await creditProgram.methods.updateCreditAccount(new anchor.BN(5001000))
             .accounts({
                 creditAccount: creditAccountPda,
             })
@@ -103,7 +103,7 @@ describe("shop", () => {
         // console.log("Created Item Account Information: ", createdItemAccount);
 
         
-        // Credit → NFT 교환: Item Key 입력 (DEGEN_0007번 아이템, 600크레딧)
+        // Credit → NFT 교환: Item Key 입력 (DEGEN_0007번 아이템, 5000000크레딧)
         // 1. CREATE ITEM ACCOUNT 인스트럭션 생성
         const initialIx = await itemProgram.methods.createItemAccount("", "", "", "", false)
             .accounts({
@@ -114,7 +114,7 @@ describe("shop", () => {
             .instruction();
         
         // 2. EXCHANGE CREDIT ACCOUNT TO ITEM ACCOUNT 인스트럭션 생성
-        const exchangeIx = await shopProgram.methods.exchangeCreditToItem("DEGEN_0007")
+        const exchangeIx = await shopProgram.methods.exchangeCreditToItem("DEGEN_0006")
             .accounts({
                 owner: provider.wallet.publicKey,
                 creditAccount: creditAccountPda,
@@ -142,11 +142,11 @@ describe("shop", () => {
         //     .rpc();
 
         // 결과 확인 2
-        // CreditAccount 잔액은 1000 - 600 = 400이어야 함
+        // CreditAccount 잔액은 5001000 - 5000000 = 1000이어야 함
         const exchangedCreditAccount = await creditProgram.account.creditAccount.fetch(creditAccountPda);
         const exchangedItemAccount = await itemProgram.account.itemAccount.fetch(itemAccount.publicKey);
         console.log("Exchanged Credit Account Balance After Exchange: ", exchangedCreditAccount.balance.toNumber());
         console.log("Exchanged Item Account Information: ", exchangedItemAccount);
-        assert.strictEqual(exchangedCreditAccount.balance.toNumber(), 400);
+        assert.strictEqual(exchangedCreditAccount.balance.toNumber(), 1000);
     });
 });
