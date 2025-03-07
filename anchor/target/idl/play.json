@@ -1,0 +1,318 @@
+{
+  "address": "9nb1AEZzVaC1VvoQAUoDJTuZK3x2uZDQ2cZd3tuAQwzC",
+  "metadata": {
+    "name": "play",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "db_code_in",
+      "discriminator": [
+        38,
+        100,
+        165,
+        242,
+        99,
+        137,
+        206,
+        108
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "db_account",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "code_tx_hash",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "finalize_game",
+      "discriminator": [
+        203,
+        227,
+        3,
+        167,
+        186,
+        102,
+        76,
+        10
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "db_account",
+          "writable": true
+        },
+        {
+          "name": "code_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  101,
+                  101,
+                  100,
+                  104,
+                  101,
+                  114,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              },
+              {
+                "kind": "account",
+                "path": "db_account.counter",
+                "account": "DBaccount"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "remit_tx_hash",
+          "type": "string"
+        },
+        {
+          "name": "block_hash",
+          "type": "string"
+        },
+        {
+          "name": "slot",
+          "type": "u64"
+        },
+        {
+          "name": "block_time",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "remit_for_random",
+      "discriminator": [
+        238,
+        111,
+        87,
+        135,
+        161,
+        97,
+        51,
+        115
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "db_account",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "user_initialize",
+      "discriminator": [
+        223,
+        157,
+        253,
+        44,
+        62,
+        158,
+        83,
+        137
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "db_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  98,
+                  115,
+                  101,
+                  101,
+                  100,
+                  104,
+                  101,
+                  114,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "CodeAccount",
+      "discriminator": [
+        65,
+        67,
+        94,
+        253,
+        193,
+        120,
+        172,
+        223
+      ]
+    },
+    {
+      "name": "DBaccount",
+      "discriminator": [
+        207,
+        58,
+        197,
+        98,
+        85,
+        208,
+        80,
+        178
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InsufficientFunds",
+      "msg": "Insufficient funds to send code."
+    },
+    {
+      "code": 6001,
+      "name": "InvalidWallet",
+      "msg": "Invalid wallet address."
+    },
+    {
+      "code": 6002,
+      "name": "InvalidReceiver",
+      "msg": "Invalid receiver address."
+    },
+    {
+      "code": 6003,
+      "name": "FundsNotReceived",
+      "msg": "Funds were not received by the expected wallet."
+    },
+    {
+      "code": 6004,
+      "name": "InvalidAccount",
+      "msg": "Provided code account is invalid."
+    },
+    {
+      "code": 6005,
+      "name": "InvalidCodeFormat",
+      "msg": "InvalidCodeFormat"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidInstructionData",
+      "msg": "InvalidInstructionData"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidTransfer",
+      "msg": "InvalidTransfer"
+    }
+  ],
+  "types": [
+    {
+      "name": "CodeAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "nft",
+            "type": "string"
+          },
+          {
+            "name": "before_tx",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DBaccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "nickname",
+            "type": "string"
+          },
+          {
+            "name": "tail_tx",
+            "type": "string"
+          },
+          {
+            "name": "counter",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
+}

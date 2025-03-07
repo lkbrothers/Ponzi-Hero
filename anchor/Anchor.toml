@@ -6,6 +6,8 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
+game = "3QfKEYFr6fgT1oc2wjptWMQoB6Qf96PPKqzutPQqUrz2"
+play = "9nb1AEZzVaC1VvoQAUoDJTuZK3x2uZDQ2cZd3tuAQwzC"
 counter = "coUnmi3oBUtwtd9fjeAvSsJssXh5A5xyPbhpewyzRVF"
 credit = "H1kXTuAJntnCELS2phbS7bMcD4VYy5CQK3wKFC9BMgfL"
 item = "3BjKmutGGbVtnVeeJnNg9xKqkAticq7WYvBjuBr1dQab"

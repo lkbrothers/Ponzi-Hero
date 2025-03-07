@@ -1,29 +1,29 @@
 // Here we export some useful types and functions for interacting with the Anchor program.
 import { AnchorProvider, Program } from '@coral-xyz/anchor'
 import { Cluster, PublicKey } from '@solana/web3.js'
-import CounterIDL from '../target/idl/counter.json'
-import type { Counter } from '../target/types/counter'
+import PlayIDL from '../target/idl/play.json';
+import type { Play } from '../target/types/play';
 
 // Re-export the generated IDL and type
-export { Counter, CounterIDL }
+export { Play, PlayIDL }
 
 // The programId is imported from the program IDL.
-export const COUNTER_PROGRAM_ID = new PublicKey(CounterIDL.address)
+export const PLAY_PROGRAM_ID = new PublicKey(PlayIDL.address)
 
 // This is a helper function to get the Counter Anchor program.
-export function getCounterProgram(provider: AnchorProvider, address?: PublicKey) {
-  return new Program({ ...CounterIDL, address: address ? address.toBase58() : CounterIDL.address } as Counter, provider)
+export function getPlayProgram(provider: AnchorProvider, address?: PublicKey) {
+  return new Program({ ...PlayIDL, address: address ? address.toBase58() : PlayIDL.address } as Play, provider)
 }
 
 // This is a helper function to get the program ID for the Counter program depending on the cluster.
-export function getCounterProgramId(cluster: Cluster) {
+export function getPlayProgramId(cluster: Cluster) {
   switch (cluster) {
     case 'devnet':
     case 'testnet':
       // This is the program ID for the Counter program on devnet and testnet.
-      return new PublicKey('G8UJpQknzHjWAy3tRhrFCXqYXeZ35VHdL3cj86RfGEEj')
+      return new PublicKey('9nb1AEZzVaC1VvoQAUoDJTuZK3x2uZDQ2cZd3tuAQwzC')
     case 'mainnet-beta':
     default:
-      return COUNTER_PROGRAM_ID
+      return PLAY_PROGRAM_ID
   }
 }
