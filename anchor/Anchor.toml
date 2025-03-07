@@ -29,7 +29,8 @@ shop = "G5SuEAeZDuPNsBxpKK8sCtYUoVGXDGXcZNRw6Jch9GQq"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+#cluster = "Localnet"
+cluster = "https://api.devnet.solana.com"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
