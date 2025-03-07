@@ -9,8 +9,8 @@ RUN curl -fsSL https://deb.nodesource.com/setup_23.x | bash - && \
     node -v
 
 # INSTALL PNPM
-RUN curl -fsSL https://get.pnpm.io/install.sh | bash
-RUN source /root/.bashrc
+RUN curl -fsSL https://get.pnpm.io/install.sh | bash - && . /root/.bashrc
+ENV PATH="/root/.local/share/pnpm:$PATH"
 
 # INSTALL SOLANA
 RUN curl --proto '=https' --tlsv1.2 -sSfL https://raw.githubusercontent.com/solana-developers/solana-install/main/install.sh | bash
