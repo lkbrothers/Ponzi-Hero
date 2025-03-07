@@ -25,9 +25,9 @@ pub struct RemitForRandom<'info> {
     #[account(
         init,
         payer = user,
-        space = 1 + 1 + 900 + 100,
         seeds = [b"seedhere", user.key().as_ref(), db_account.counter.to_le_bytes().as_ref()],
         bump,
+        space = 8 + 1 + 8 + 8 + 4 + 100
     )]
     pub code_account: Account<'info, CodeAccount>,
     pub system_program: Program<'info, System>,
@@ -39,9 +39,7 @@ pub struct FinalizeGame<'info> {
     pub user: Signer<'info>,
     #[account(mut)]
     pub db_account: Account<'info, DBaccount>,
-    // 매 finalize_game 호출 시 새로운 code_account를 생성합니다.
     #[account(mut)]
     pub code_account: Account<'info, CodeAccount>,
-
     pub system_program: Program<'info, System>,
 }

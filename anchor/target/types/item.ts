@@ -116,8 +116,15 @@ export type Item = {
           "signer": true
         },
         {
-          "name": "recentBlockhashes",
-          "address": "SysvarRecentB1ockHashes11111111111111111111"
+          "name": "dbAccount",
+          "writable": true
+        },
+        {
+          "name": "codeAccount",
+          "writable": true
+        },
+        {
+          "name": "gameProgram"
         },
         {
           "name": "systemProgram",
@@ -128,6 +135,22 @@ export type Item = {
         {
           "name": "gachaType",
           "type": "u8"
+        },
+        {
+          "name": "dummyTxHash",
+          "type": "string"
+        },
+        {
+          "name": "blockHash",
+          "type": "string"
+        },
+        {
+          "name": "slot",
+          "type": "u64"
+        },
+        {
+          "name": "blockTime",
+          "type": "u64"
         }
       ]
     },
@@ -192,6 +215,32 @@ export type Item = {
   ],
   "accounts": [
     {
+      "name": "codeAccount",
+      "discriminator": [
+        65,
+        67,
+        94,
+        253,
+        193,
+        120,
+        172,
+        223
+      ]
+    },
+    {
+      "name": "dBaccount",
+      "discriminator": [
+        207,
+        58,
+        197,
+        98,
+        85,
+        208,
+        80,
+        178
+      ]
+    },
+    {
       "name": "itemAccount",
       "discriminator": [
         203,
@@ -218,6 +267,50 @@ export type Item = {
     }
   ],
   "types": [
+    {
+      "name": "codeAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "seed1",
+            "type": "u64"
+          },
+          {
+            "name": "seed2",
+            "type": "u64"
+          },
+          {
+            "name": "beforeTx",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "dBaccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "tailTx",
+            "type": "string"
+          },
+          {
+            "name": "counter",
+            "type": "u64"
+          }
+        ]
+      }
+    },
     {
       "name": "itemAccount",
       "type": {
