@@ -59,11 +59,9 @@ export default function Page() {
   }
 
   return (
-    <div className="flex flex-col gap-8 w-full">
-        <div className="flex flex-row items-center gap-8">
-            <WalletInfo balance={balance} publicKey={publicKey} />
-        </div>
-      <div className="flex flex-row items-center gap-8">
+    <div className="flex flex-col gap-8 w-full h-[55vh] justify-center items-center ">
+
+      <div className="flex flex-row w-[90%] items-center gap-8 bg-[#] py-4">
         <Equipments equippedItems={equippedItems} />
         <Inventory tokens={tokens} nfts={nfts} equippedItems={equippedItems} setEquippedItems={setEquippedItems} />
       </div>

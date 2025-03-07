@@ -2,18 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+    font-family: 'DungGeunMo';
+    src: url('/fonts/DungGeunMo.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@keyframes colorChange {
+    0% {
+        color: white;
+    }
+    25% {
+        color: white;
+    }
+    26% {
+        color: black;
+    }
+    75% {
+        color: black;
+    }
+    76% {
+        color: white;
+    }
+    100% {
+        color: white;
+    }
+}
+
+@keyframes pixelShake {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    25% {
+        transform: translateY(-5px);
+    }
+    50% {
+        transform: translateY(0);
+    }
+    75% {
+        transform: translateY(5px);
+    }
+}
+
 html,
 body {
-    height: 100%;
+    height: 100vh;
+    font-family: 'DungGeunMo', sans-serif;
+}
+
+.color-changing-text {
+    animation: colorChange 2s infinite steps(1);
+}
+
+.pixel-shake {
+    animation: pixelShake 1s infinite steps(1);
+}
+
+.wallet-adapter-button{
+    background-image: url('/images/bg.png') !important;
+    background-size: 100% 100% !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    background-color: #000000 !important;
 }
 
 .wallet-adapter-button-trigger {
-    background: rgb(100, 26, 230) !important;
     border-radius: 8px !important;
     padding-left: 16px !important;
     padding-right: 16px !important;
 }
 .wallet-adapter-dropdown-list,
 .wallet-adapter-button {
-    font-family: inherit !important;
+    font-family: 'DungGeunMo', sans-serif !important;
 }

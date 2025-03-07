@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::hash::{Hash, hash};
 
-declare_id!("3BjKmutGGbVtnVeeJnNg9xKqkAticq7WYvBjuBr1dQab");
+declare_id!("A3iwuQp9UcJsxcxXJ9ZWWLv5B616srHw8fCGkEeWgLjN");
 
 pub const NUM_GACHA: usize = 6;
 pub const NUM_GRADE: usize = 6;
