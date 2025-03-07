@@ -6,7 +6,7 @@ use item::cpi::accounts::DeleteItemAccount;
 // use credit::program as CreditProgram;
 // use item::program as ItemProgram;
 
-declare_id!("CR8Sox2FniGkNFQ6AmE7FGi5cJjpJn7QTvhhgZcbg9PX");
+declare_id!("2rwPP5Dev33CypTWEEDP1DSGpxYVi7xAcKwiTRYXWQNe");
 
 pub const NUM_IMAGES: usize = 10;
 pub const NUM_GACHA: usize = 6;

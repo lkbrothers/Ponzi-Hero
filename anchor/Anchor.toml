@@ -6,12 +6,10 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-game = "3QfKEYFr6fgT1oc2wjptWMQoB6Qf96PPKqzutPQqUrz2"
-play = "9nb1AEZzVaC1VvoQAUoDJTuZK3x2uZDQ2cZd3tuAQwzC"
-counter = "coUnmi3oBUtwtd9fjeAvSsJssXh5A5xyPbhpewyzRVF"
-credit = "H1kXTuAJntnCELS2phbS7bMcD4VYy5CQK3wKFC9BMgfL"
-item = "3BjKmutGGbVtnVeeJnNg9xKqkAticq7WYvBjuBr1dQab"
-shop = "CR8Sox2FniGkNFQ6AmE7FGi5cJjpJn7QTvhhgZcbg9PX"
+game = "37Z9j1LjgPRHLnB3S3cTL7t4mCSsnWmrtUJj5u9eSBQi"
+credit = "B2bJBFBn3swvZz5YrtuuPmXZTbUpddBS3AaPc2WiYxg8"
+item = "A3iwuQp9UcJsxcxXJ9ZWWLv5B616srHw8fCGkEeWgLjN"
+shop = "2rwPP5Dev33CypTWEEDP1DSGpxYVi7xAcKwiTRYXWQNe"
 
 [registry]
 url = "https://api.apr.dev"

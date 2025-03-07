@@ -11,7 +11,7 @@ pub mod error;
 use crate::context::*;
 use crate::error::ErrorCode;
 
-declare_id!("3QfKEYFr6fgT1oc2wjptWMQoB6Qf96PPKqzutPQqUrz2");
+declare_id!("37Z9j1LjgPRHLnB3S3cTL7t4mCSsnWmrtUJj5u9eSBQi");
 
 #[program]
 pub mod game {
@@ -139,8 +139,11 @@ pub mod game {
         **db_pda_account_info.try_borrow_mut_lamports()? -= required_lamports;
         **receiver_account.try_borrow_mut_lamports()? += required_lamports;
 
+        msg!("dummy_tx_hash: {}", dummy_tx_hash);
+
         ctx.accounts.db_account.tail_tx = dummy_tx_hash.clone();
         ctx.accounts.db_account.counter += 1;
 
         Ok(())
     }
+}

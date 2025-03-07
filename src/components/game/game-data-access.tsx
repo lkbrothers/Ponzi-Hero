@@ -103,7 +103,7 @@ export function useGameProgramDBAccount({
                 .rpc(),
         onSuccess: (signature) => {
             transactionToast(signature)
-            return dbAccountQuery.refetch()
+            return { CodeAccounts: CodeAccounts.refetch(), dbAccountQuery: dbAccountQuery.refetch() }
         },
         onError: () => toast.error('Failed to remit for random'),
     })
@@ -134,7 +134,7 @@ export function useGameProgramDBAccount({
         },
         onSuccess: (signature) => {
             transactionToast(signature)
-            return { CodeAccounts: CodeAccounts.refetch() }
+            return { CodeAccounts: CodeAccounts.refetch(), dbAccountQuery: dbAccountQuery.refetch() }
         },
         onError: () => toast.error('Failed to finalize game'),
     })
@@ -254,7 +254,7 @@ export function useGameProgramDBAccount({
                     return chain;
                 }
 
-                // 4. 해당 트랜잭션의 codeAccount의 accountInfo를 조회 (특정 slot 기준)
+                // 4. 해당 트랜잭션의 codeAccount의 accountInfo를 조회
                 const accountInfo = await connection.getAccountInfo(codeAccountPDA);
                 if (!accountInfo) {
                     console.error("Account info not found for PDA", codeAccountPDA.toString());

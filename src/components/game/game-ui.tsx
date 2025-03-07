@@ -92,35 +92,28 @@ function GameDashboard({ userPublicKey, dbAccount }: { userPublicKey: PublicKey,
         fetchCodeAccount,
     } = useGameProgramDBAccount({ userPublicKey, dbAccount })
 
-    const { CodeAccounts } = useGameProgram()
-    const [codeAccount, setCodeAccount] = useState<PublicKey | null>(null);
-
-    // CodeAccounts가 업데이트될 때 codeAccount 상태를 갱신
-    useEffect(() => {
-        if (CodeAccounts.data && CodeAccounts.data.length > 0) {
-            setCodeAccount(CodeAccounts.data[0].publicKey);
-        }
-    }, [CodeAccounts.data]);
-
     const { fetchBlockInfo } = useGameProgram()
 
-    // 최신 코드 계정의 키(문자열)를 저장 (dbAccount.tailTx를 사용)
-    const recentTailTx = useMemo(() => dbAccountQuery.data?.tailTx ?? '', [dbAccountQuery.data?.tailTx])
+    const { CodeAccounts } = useGameProgram()
 
-    // codeChain을 상태로 관리
+    const [codeAccount, setCodeAccount] = useState<PublicKey | null>(null);
     const [codeChain, setCodeChain] = useState<{ txHash: string; before_tx: string; nft: string }[]>([])
-    // 송금 트랜잭션 해시를 저장할 상태
     const [dummyTx, setDummyTx] = useState<string | null>(null);
+    const [recentTailTx, setRecentTailTx] = useState<string | null>(null);
+    useEffect(() => {
+        const tailTx = dbAccountQuery.data?.tailTx ?? '';
+        setRecentTailTx(tailTx);
+    }, [dbAccountQuery.data?.tailTx]);
 
     // 송금 버튼 핸들러
     const handleRemit = async () => {
         try {
             // 1. remitForRandom 실행 → dummyTx 획득
-            const txHash = await remitForRandomMutation.mutateAsync();
-            toast.success(`송금 성공: ${txHash}`);
-            setDummyTx(txHash);
-            const codeAccount = await fetchCodeAccount(txHash);
-            setCodeAccount(codeAccount);
+            const dummyTxHash = await remitForRandomMutation.mutateAsync();
+            toast.success(`송금 성공: ${dummyTxHash}`);
+            setDummyTx(dummyTxHash);
+            const codeAccountAfterDummyTx = await fetchCodeAccount(dummyTxHash);
+            setCodeAccount(codeAccountAfterDummyTx);
         } catch (error) {
             console.error(error);
             toast.error("송금에 실패했습니다.");
@@ -138,22 +131,21 @@ function GameDashboard({ userPublicKey, dbAccount }: { userPublicKey: PublicKey,
             // 2. fetchBlockInfo를 사용해 블록 정보 조회
             const { blockHash, slot, blockTime } = await fetchBlockInfo(dummyTx);
             // 3. finalizeGame 실행 (dummyTx와 블록 정보를 전달)
-            const finalizeSignature = await finalizeGameMutation.mutateAsync({
+            // await를 추가하여 작업이 완료될 때까지 기다립니다.
+            await finalizeGameMutation.mutateAsync({
                 codeAccount: codeAccount ?? PublicKey.default,
                 dummyTxHash: dummyTx,
                 blockHash,
                 slot,
                 blockTime: blockTime ?? 0,
             });
-            toast.success(`게임 시작 성공: ${finalizeSignature}`);
+            toast.success(`게임 시작 성공: ${dummyTx}`);
 
-            // 4. dbCodeInMutation을 통해 db의 tailTx 업데이트
-            // await dbCodeInMutation.mutateAsync(finalizeSignature);
-            // toast.success(`db_code_in 업데이트 성공: ${finalizeSignature}`);
-
-            // 5. 새로운 tailTx(finalizeSignature)를 기준으로 codeChain 재조회
-            const updatedChain = await fetchCodeChain(finalizeSignature);
+            // 5. finalizeGame 완료 후 새로운 tailTx(finalizeSignature)를 기준으로 codeChain 재조회
+            const updatedChain = await fetchCodeChain(dummyTx);
+            console.log(dummyTx)
             setCodeChain(updatedChain);
+            setRecentTailTx(dummyTx);
         } catch (error) {
             console.error(error);
             toast.error("게임 시작에 실패했습니다.");

@@ -21,7 +21,7 @@ export function getGameProgramId(cluster: Cluster) {
     case 'devnet':
     case 'testnet':
       // This is the program ID for the Counter program on devnet and testnet.
-      return new PublicKey('3QfKEYFr6fgT1oc2wjptWMQoB6Qf96PPKqzutPQqUrz2')
+      return new PublicKey('37Z9j1LjgPRHLnB3S3cTL7t4mCSsnWmrtUJj5u9eSBQi')
     case 'mainnet-beta':
     default:
       return GAME_PROGRAM_ID
