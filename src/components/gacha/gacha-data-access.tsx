@@ -1,6 +1,6 @@
 'use client'
 
-import { getGachaProgram, getGachaProgramId } from '@project/anchor'
+import { getGameProgram, getGameProgramId } from '@project/anchor'
 import { useConnection } from '@solana/wallet-adapter-react'
 import { Cluster, Keypair, PublicKey } from '@solana/web3.js'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -9,6 +9,7 @@ import toast from 'react-hot-toast'
 import { useCluster } from '../cluster/cluster-data-access'
 import { useAnchorProvider } from '../solana/solana-provider'
 import { useTransactionToast } from '../ui/ui-layout'
+import { getGachaProgram, getGachaProgramId } from 'anchor/src/gacha-exports'
 
 // 가챠 관련 상수
 export const NUM_GACHA = 6;
