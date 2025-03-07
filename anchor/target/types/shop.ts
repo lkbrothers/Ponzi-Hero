@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/shop.json`.
  */
 export type Shop = {
-  "address": "CR8Sox2FniGkNFQ6AmE7FGi5cJjpJn7QTvhhgZcbg9PX",
+  "address": "2rwPP5Dev33CypTWEEDP1DSGpxYVi7xAcKwiTRYXWQNe",
   "metadata": {
     "name": "shop",
     "version": "0.1.0",
