@@ -93,6 +93,9 @@ export function GachaCreate() {
     const [isRanking, setIsRanking] = useState(false)
 
     const [codeAccount, setCodeAccount] = useState<PublicKey | null>(null);
+
+    const [checkDbAccount, setCheckDbAccount] = useState<boolean>(false);
+
     const [dummyTx, setDummyTx] = useState<string | null>(null);
 
     const { dbAccount, creditAccount, selectedDbAccount, selectedCreditAccount, setDbAccount, setCreditAccount, selectDbAccount, selectCreditAccount } = useAccountStore()
@@ -140,12 +143,8 @@ export function GachaCreate() {
   };
 
   useEffect(() => {
-
-  
-      const creditBalance =  fetchCreditBalance();
-      console.log("creditBalance = ", creditBalance)
-      //setCredit(creditBalance)
-  }, [])
+    fetchCreditBalance();
+  }, [CreditAccount]);
 
   useEffect(() => {
     handleGachaClick()
@@ -172,8 +171,10 @@ export function GachaCreate() {
 
     const handleGachaClick = async () => {
         if(!connected) {
-            toast.error("지갑을 연결해주세요.")
+            toast.error("11지갑을 연결해주세요.")
             return
+        }else{
+            toast.error('Connected Wallet')
         }
         // try {
         //     await handleRemit()
@@ -279,7 +280,7 @@ export function GachaCreate() {
             <div className={`flex flex-col w-full items-center justify-${isInventory ? 'between' : 'end'}`}>
                 <MainContent
                     credit={credit}
-                    isGacha={isGacha}
+                    isGacha={isGacha} 
                     isInventory={isInventory}
                     isRanking={isRanking}
                     handleRemit={handleRemit}
@@ -288,14 +289,31 @@ export function GachaCreate() {
                     showModal={showModal}
                     gachaResult={gachaResult}
                     creditAccount={creditAccount}
+                    checkDbAccount={checkDbAccount}
                     onClose={handleClose}
                     onRetry={handleRetry}
                     setDbAccount={setDbAccount}
                     setCreditAccount={setCreditAccount}
                     setCodeAccount={setCodeAccount}
                     setDummyTx={setDummyTx}
+                    setCheckDbAccount={setCheckDbAccount}
+                    selectedGachaLevel={selectedGachaLevel}
+                    setSelectedGachaLevel={setSelectedGachaLevel}
                 />
-                <LeftMenu isGacha={isGacha} isInventory={isInventory} isRanking={isRanking} setIsGacha={setIsGacha} setIsInventory={setIsInventory} setIsRanking={setIsRanking} connected={connected} handleRemit={handleRemit} setGachaResult={setGachaResult} />
+                <LeftMenu 
+                    isGacha={isGacha}
+                    isInventory={isInventory}
+                    isRanking={isRanking}
+                    setIsGacha={setIsGacha}
+                    setIsInventory={setIsInventory}
+                    setIsRanking={setIsRanking}
+                    connected={connected}
+                    handleRemit={handleRemit}
+                    setGachaResult={setGachaResult}
+                    checkDbAccount={checkDbAccount}
+                    selectedGachaLevel={selectedGachaLevel}
+                    setSelectedGachaLevel={setSelectedGachaLevel}
+                />
             </div>
 
             {/* 모달 코드 제거 */}
@@ -303,85 +321,35 @@ export function GachaCreate() {
     )
 }
 
-// export function GachaList() {
-//     const { publicKey } = useWallet()
-
-//     if (getProgramAccount.isLoading) {
-//         return <span className="loading loading-spinner loading-lg"></span>
-//     }
-//     if (!getProgramAccount.data?.value) {
-//         return (
-//             <div className="alert alert-info flex justify-center">
-//                 <span>프로그램 계정을 찾을 수 없습니다. 프로그램이 배포되었고 올바른 클러스터에 있는지 확인하세요.</span>
-//             </div>
-//         )
-//     }
-
-//     // 내 NFT만 필터링
-//     const myNfts = allNft.data?.filter(account =>
-//         publicKey && account.account.owner.toString() === publicKey.toString()
-//     );
-
-
-//     return (
-//         <div className={'space-y-6'}>
-//             <h2 className="text-2xl font-bold">내 NFT 컬렉션</h2>
-//             {allNft.isLoading ? (
-//                 <span className="loading loading-spinner loading-lg"></span>
-//             ) : myNfts?.length ? (
-//                 <div className="flex flex-wrap gap-4">
-//                     {myNfts.map((account) => {
-//                         const item = account.account;
-//                         let gradeIndex = 0;
-//                         // 등급 문자열을 인덱스로 변환
-//                         switch (item.grade) {
-//                             case 'NORMAL': gradeIndex = 0; break;
-//                             case 'RARE': gradeIndex = 1; break;
-//                             case 'EPIC': gradeIndex = 2; break;
-//                             case 'UNIQUE': gradeIndex = 3; break;
-//                             case 'LEGENDARY': gradeIndex = 4; break;
-//                             case 'DEGENDARY': gradeIndex = 5; break;
-//                         }
-
-//                         return (
-//                             <div key={account.publicKey.toString()} className="card bg-base-100 shadow-xl">
-//                                 <figure className="px-4 pt-4">
-//                                     <img src={`/images/${item.image}`} alt="NFT" className="rounded-xl h-48 w-48 object-cover" />
-//                                 </figure>
-//                                 <div className="card-body">
-//                                     <h2 className="card-title">{item.grade}</h2>
-//                                     <p>소유자: {item.owner.toString().slice(0, 8)}...</p>
-//                                     <p>{item.image}</p>
-//                                     <div className="card-actions justify-end">
-//                                         <div className="badge badge-outline">{item.grade}</div>
-//                                     </div>
-//                                 </div>
-//                             </div>
-//                         )
-//                     })}
-//                 </div>
-//             ) : (
-//                 <div className="text-center">
-//                     <h2 className={'text-2xl'}>보유한 NFT가 없습니다</h2>
-//                     위에서 새로운 가챠를 뽑아보세요.
-//                 </div>
-//             )}
-//         </div>
-//     )
-// }
-
-const LeftMenu = ({ isGacha, isInventory, isRanking, setIsGacha, setIsInventory, setIsRanking, connected, handleRemit, setGachaResult }: { isGacha: boolean, isInventory: boolean, isRanking: boolean, setIsGacha: (isGacha: boolean) => void, setIsInventory: (isInventory: boolean) => void, setIsRanking: (isRanking: boolean) => void, connected: boolean, handleRemit: () => void, setGachaResult: (gachaResult: any) => void }) => {
+const LeftMenu = ({
+    isGacha,
+    isInventory, 
+    isRanking,
+    setIsGacha,
+    setIsInventory,
+    setIsRanking,
+    connected,
+    handleRemit,
+    setGachaResult,
+    selectedGachaLevel,
+    setSelectedGachaLevel,
+    checkDbAccount,
+}: {
+    isGacha: boolean,
+    isInventory: boolean,
+    isRanking: boolean,
+    setIsGacha: (isGacha: boolean) => void,
+    setIsInventory: (isInventory: boolean) => void,
+    setIsRanking: (isRanking: boolean) => void,
+    connected: boolean,
+    handleRemit: () => void,
+    setGachaResult: (gachaResult: any) => void,
+    selectedGachaLevel: number,
+    setSelectedGachaLevel: (selectedGachaLevel: number) => void,
+    checkDbAccount : boolean
+}) => {
     return (
         <div className="flex flex-row w-full h-[25vh] items-center justify-around gap-10">
-            {/* {Array.from({ length: NUM_GACHA }).map((_, index) => (
-      <button 
-        key={index}
-        className={`btn ${selectedGachaLevel === index ? 'btn-primary' : 'btn-outline'}`}
-        onClick={() => setSelectedGachaLevel(index)}
-      >
-        레벨 {index + 1}
-      </button>
-    ))} */}
             {isGacha && (
                 <>
                     <button className="btn btn-ghost w-32 h-28 pixel-shake">
@@ -391,7 +359,7 @@ const LeftMenu = ({ isGacha, isInventory, isRanking, setIsGacha, setIsInventory,
                         <button
                             className="text-2xl w-1/2 flex justify-center items-end font-bold"
                             disabled={!connected}
-                            onClick={handleRemit}
+                            onClick={checkDbAccount ? handleRemit : () => toast.error('Create Account First')}
                         >
                             {connected ?
 
@@ -415,7 +383,8 @@ const LeftMenu = ({ isGacha, isInventory, isRanking, setIsGacha, setIsInventory,
     )
 }
 
-const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: parentHandleRemit, handleGachaClick, connected, showModal, gachaResult, onClose, onRetry, creditAccount, setDbAccount, setCreditAccount, setCodeAccount, setDummyTx }: {
+const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: parentHandleRemit, handleGachaClick, connected, showModal, gachaResult, onClose, onRetry,checkDbAccount, creditAccount, setDbAccount, setCreditAccount, setCodeAccount, setDummyTx, setCheckDbAccount,    selectedGachaLevel,
+    setSelectedGachaLevel }: {
     credit: number | undefined,
     isGacha: boolean,
     isInventory: boolean,
@@ -428,10 +397,14 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
     onClose?: () => void,
     onRetry?: () => void,
     creditAccount: any,
+    checkDbAccount:boolean,
     setDbAccount: (account: any) => void,
     setCreditAccount: (account: any) => void,
     setCodeAccount: (account: any) => void,
     setDummyTx: (account: any) => void,
+    setCheckDbAccount : (checkDbAccount : any) => void
+    selectedGachaLevel: number,
+    setSelectedGachaLevel: (selectedGachaLevel: number) => void,
 }) => {
 
     const { userInitialize, DbAccounts, getProgramAccount } = useGameProgram()
@@ -449,12 +422,11 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
 
     const queryClient = useQueryClient();
 
-    const [checkDbAccount, setCheckDbAccount] = useState(false)
 
     // DB 계정 생성 함수
     const handleDbAccountCreate = async () => {
         if (!publicKey) {
-            toast.error('지갑을 연결해주세요.')
+            toast.error('111지갑을 연결해주세요.')
             return
         }
 
@@ -523,8 +495,7 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
             
             // 오류가 발생했지만 이미 계정이 존재하는 경우 처리
             if (error instanceof Error && error.message.includes("already in use")) {
-                console.log("이미 계정이 존재합니다. 기존 계정을 불러옵니다.");
-                toast.info('이미 계정이 존재합니다. 기존 계정을 불러옵니다.');
+                toast.success('이미 계정이 존재합니다. 기존 계정을 불러옵니다.');
                 
                 // 기존 계정 다시 불러오기
                 await DbAccounts.refetch();
@@ -561,8 +532,10 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
     // 크레딧 계정 생성 함수
     const handleCreditAccountCreate = async () => {
         if (!publicKey) {
-            toast.error('지갑을 연결해주세요.')
+            toast.error('Connect Wallet First')
             return
+        }else{
+            toast.success('지갑이 연결되었습니다')
         }
 
         console.log("크레딧 계정 생성 시작...")
@@ -623,54 +596,10 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
         }
     };
 
-
-
-    // useEffect(() => {
-    //     // 컴포넌트 마운트 시 또는 데이터 변경 시 한 번만 실행
-    //     const syncAccounts = async () => {
-    //         // 지갑이 연결되어 있을 때만 계정 설정
-    //         if (!connected || !publicKey) {
-    //             // 지갑 연결이 해제되면 계정 정보 초기화
-    //             setDbAccount(null);
-    //             setCreditAccount(null);
-    //             return;
-    //         }
-            
-    //         // DbAccount 설정
-    //         if (DbAccounts.data && DbAccounts.data.length > 0) {
-    //             const newDbAccount = DbAccounts.data[0].publicKey;
-    //             if (!dbAccount || !dbAccount.equals(newDbAccount)) {
-    //                 console.log("dbAccount 설정: ", newDbAccount.toString());
-    //                 setDbAccount(newDbAccount);
-    //             }
-    //         }
-
-    //         // 크레딧 계정 정보 설정
-    //         if (creditAccountPda && CreditAccount) {
-    //             if (!creditAccount || !creditAccount.equals(creditAccountPda)) {
-    //                 console.log("creditAccount 설정: ", creditAccountPda.toString());
-    //                 setCreditAccount(creditAccountPda);
-    //             }
-    //         }
-    //     };
-
-    //     syncAccounts();
-    // }, [DbAccounts.data, CreditAccount, creditAccountPda, setDbAccount, setCreditAccount, connected, publicKey]);
-
-
-
-
-
-
-
-
-
-    // if (!publicKey) return;
-
     const {
         remitForRandomMutation,
         fetchCodeAccount
-    } = useGameProgramDBAccount({ userPublicKey: publicKey!, dbAccount });
+    } = useGameProgramDBAccount({ userPublicKey: publicKey! });
 
 
     // 함수 이름 변경
@@ -688,13 +617,6 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
         }
     };
 
-
-
-
-
-
-
-
     return (
         <>
             {isGacha && (
@@ -703,7 +625,7 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
                         <div className="flex flex-col items-center justify-center h-full">
                             <h2 className="text-2xl font-bold mb-4 text-center">계정 생성이 필요합니다</h2>
                             <div className="flex gap-4">
-                                {!checkDbAccount && (
+                                {/* {!checkDbAccount && (
                                     <button
                                         className="btn btn-primary"
                                         onClick={handleDbAccountCreate}
@@ -718,12 +640,23 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
                                     >
                                         크레딧 계정 생성하기
                                     </button>
+                                )} */}
+                                {(!checkDbAccount || !creditAccount) && (
+                                    <button
+                                        className="btn btn-accent"
+                                        onClick={async () => {
+                                            await handleDbAccountCreate()
+                                            await handleCreditAccountCreate()
+                                        }}
+                                    >
+                                        Create Account
+                                    </button>
                                 )}
                             </div>
                         </div>
                     ) : showModal && gachaResult ? (
-                        <div className=" w-full">
-                            <h2 className="text-2xl font-bold  text-center">Congratulations!</h2>
+                        <div className=" w-full h-full flex flex-col items-center justify-center">
+                            <h2 className="text-3xl font-bold text-center text-black">Congratulations!</h2>
                             <div className="flex flex-col items-center gap-4 mb-4">
                                 <img
                                     src={getImageUrl(gachaResult.uri)}
@@ -731,8 +664,8 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
                                     className="w-48 h-48 object-cover rounded"
                                 />
                                 <div className="text-center">
-                                    <h3 className="text-xl font-bold">{gachaResult.name}</h3>
-                                    <p className="text-sm text-gray-600">Grade: {gachaResult.grade}</p>
+                                    <h3 className="text-3xl text-black font-extrabold">{gachaResult.name}</h3>
+                                    <GradeText grade={gachaResult.grade} />
                                     <p className="text-sm text-gray-600">Item ID: {gachaResult.mint.slice(0, 8)}...</p>
                                 </div>
                             </div>
@@ -743,23 +676,26 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
                             <div className="text-[64px] color-changing-text mb-8">
                                 PRESS BUTTON
                             </div>
-                            <button
-                                className="btn btn-sm btn-outline btn-accent mt-2"
-                                onClick={() => handleCreditDeposit(1000)}
-                            >
-                                1000 크레딧 충전
-                            </button>
-
-                            {/* 크레딧 정보 표시 - dbAccount와 creditAccount 모두 있을 때만 표시 */}
-                            {/* {dbAccount && creditAccount && (
-                                <div className="bg-base-200 p-4 rounded-lg shadow-md mb-4">
-                                    <h3 className="text-xl font-bold mb-2">크레딧 정보</h3>
-                                    <p className="text-lg">현재 잔액: <span className="font-bold text-primary">{credit}</span> 크레딧</p>
-                                    <button className="btn btn-secondary" onClick={handleGachaClick}>
-                                        송금
-                                    </button>
-                                </div>
-                            )} */}
+                            <div className="flex items-center gap-2">
+                                <select 
+                                    className="select select-bordered select-md text-xl"
+                                    value={selectedGachaLevel}
+                                    onChange={(e) => setSelectedGachaLevel(Number(e.target.value))}
+                                >
+                                    <option value={0}>Common Gacha (0)</option>
+                                    <option value={1}>Bronze Gacha (50)</option>
+                                    <option value={2}>Silver Gacha (200)</option>
+                                    <option value={4}>Gold Gacha(1000)</option>
+                                    <option value={5}>Diamond Gacha(10000)</option>
+                                    <option value={6}>Degen Gacha(200000)</option>
+                                </select>
+                                <button
+                                    className="btn btn-sm btn-outline btn-accent"
+                                    onClick={() => handleCreditDeposit(1000)}
+                                >
+                                    1000 크레딧 충전
+                                </button>
+                            </div>
                         </div>
                     )}
                 </>
@@ -768,5 +704,34 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
                 <InventoryUI />
             )}
         </>
+    )
+}
+
+const GradeText = ({ grade }: { grade: string }) => {
+    let textColor = 'Black'
+    let bgColor = 'White'
+    if (grade === 'NORMAL') {
+        textColor = 'Gray'
+        bgColor = '#f5f5f5'
+    } else if (grade === 'RARE') {
+        textColor = 'Blue'
+        bgColor = '#e3f2fd'
+    } else if (grade === 'EPIC') {
+        textColor = 'Purple'
+        bgColor = '#ffffff'
+    } else if (grade === 'LEGENDARY') {
+        textColor = 'Gold'
+        bgColor = '#fff8e1'
+    }else if(grade === 'DEGENDARY'){
+        textColor = 'Pink'
+        bgColor = '#fce4ec'
+    }
+    return (
+        <div className='flex flex-row items-center'>
+            <span className="text-xl text-black text-bold">Grade: </span>
+        <div className="flex items-center gap-2 p-2 rounded-lg" style={{ backgroundColor: bgColor }}>
+            <p style={{ color: textColor, padding: '4px 8px', borderRadius: '4px' }}>{grade}</p>
+        </div>
+        </div>
     )
 }
