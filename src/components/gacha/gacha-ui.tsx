@@ -522,12 +522,24 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
         setCheckDbAccount(true)
     };
 
-    // useEffect(() => {
-    //     console.log("useEffectdbAccount = ", DbAccounts.data)
-    //     if(DbAccounts.data?.[0]?.publicKey.toString()){
-    //         setDbAccount(DbAccounts.data?.[0]?.publicKey)
-    //     }
-    // }, [DbAccounts.data?.[0]?.publicKey])
+    useEffect(() => {
+        if (!publicKey || !DbAccounts.data) return;
+
+        const [expectedPda, _] = PublicKey.findProgramAddressSync(
+            [Buffer.from("dbseedhere"), publicKey.toBuffer()],
+            getGameProgramId("devnet") || new PublicKey("")
+        );
+
+        const existingAccount = DbAccounts.data.find(acc => 
+            acc.publicKey.toString() === expectedPda.toString()
+        );
+
+        if (existingAccount) {
+            console.log("기존 DB 계정을 찾았습니다:", existingAccount.publicKey.toString());
+            toast.success('기존 DB 계정을 불러왔습니다!');
+            setDbAccount(existingAccount.publicKey);
+        }
+    }, [DbAccounts.data, publicKey])
 
     // 크레딧 계정 생성 함수
     const handleCreditAccountCreate = async () => {
