@@ -449,6 +449,8 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
 
     const queryClient = useQueryClient();
 
+    const [checkDbAccount, setCheckDbAccount] = useState(false)
+
     // DB 계정 생성 함수
     const handleDbAccountCreate = async () => {
         if (!publicKey) {
@@ -489,6 +491,7 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
                 console.log("일치하는 DB 계정이 존재합니다:", existingAccount.publicKey.toString());
                 setDbAccount(existingAccount.publicKey);
                 toast.success('기존 DB 계정을 불러왔습니다!');
+                setCheckDbAccount(true)
                 return;
             }
             
@@ -544,6 +547,8 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
                 toast.error('DB 계정 생성에 실패했습니다.');
             }
         }
+
+        setCheckDbAccount(true)
     };
 
     useEffect(() => {
@@ -698,7 +703,7 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
                         <div className="flex flex-col items-center justify-center h-full">
                             <h2 className="text-2xl font-bold mb-4 text-center">계정 생성이 필요합니다</h2>
                             <div className="flex gap-4">
-                                {!dbAccount && (
+                                {!checkDbAccount && (
                                     <button
                                         className="btn btn-primary"
                                         onClick={handleDbAccountCreate}
