@@ -40,7 +40,7 @@ export function SelectedNftInteraction({
     // }, [equippedItems])
 
     const handleEquip = async () => {
-        const type = selectedClickNft.account.part;
+        let type = selectedClickNft.account.part;
         console.log("장착 시작 - 아이템 타입:", type);
         
         let newEquippedItems = { ...equippedItems };
@@ -80,9 +80,12 @@ export function SelectedNftInteraction({
                 };
             }
         } else {
+            if (type ==='head') type = 'Head';
+            else if (type === 'body') type = 'Body';
+
             console.log(`일반 아이템 장착 시도 - ${type} 부위`);
             // 일반적인 경우: 해당 부위에만 선택된 NFT를 장착
-            if (newEquippedItems[type] && newEquippedItems[type].publicKey) {
+            if (newEquippedItems[type]) {
                 console.log("해당 부위에 이미 장착된 아이템이 있음 - 교체");
                 fromItemAccountPublicKey = newEquippedItems[type].publicKey;
             }
@@ -179,9 +182,6 @@ export function SelectedNftInteraction({
         }
     };
 
-    useEffect(() => {
-        console.log("equippedItems = ", equippedItems)
-    }, [equippedItems])
 
     // 현재 선택된 NFT가 장착되어 있는지 정확히 확인 (arms 타입 고려)
     const isEquipped = (() => {

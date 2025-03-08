@@ -9,6 +9,7 @@ import toast from 'react-hot-toast'
 import { useCluster } from '../cluster/cluster-data-access'
 import { useAnchorProvider } from '../solana/solana-provider'
 import { useTransactionToast } from '../ui/ui-layout'
+import { useAccountStore } from '../../store/accountStore'
 import BN from 'bn.js'
 
 export function useGameProgram() {
@@ -96,15 +97,14 @@ export function useGameProgram() {
 
 export function useGameProgramDBAccount({
     userPublicKey,
-    dbAccount,
 }: {
     userPublicKey: PublicKey,
-    dbAccount: PublicKey | undefined,
 }) {
 
     const { cluster } = useCluster()
     const transactionToast = useTransactionToast()
     const { program, programId, connection, CodeAccounts } = useGameProgram()
+    const { dbAccount } = useAccountStore()
 
     const dbAccountQuery = useQuery({
         queryKey: ['game', 'fetch', { cluster, dbAccount }],
@@ -113,14 +113,16 @@ export function useGameProgramDBAccount({
 
     const remitForRandomMutation = useMutation({
         mutationKey: ['game', 'remitForRandom', { cluster, dbAccount }],
-        mutationFn: () =>
-            program.methods
+        mutationFn: () => {
+            console.log("remitForRandomMutation ", dbAccount?.toString())
+            return program.methods
                 .remitForRandom()
                 .accounts({
                     user: userPublicKey,
                     dbAccount: dbAccount!,
                 })
-                .rpc(),
+                .rpc()
+        },
         onSuccess: (signature) => {
             transactionToast(signature)
             return { CodeAccounts: CodeAccounts.refetch(), dbAccountQuery: dbAccountQuery.refetch() }

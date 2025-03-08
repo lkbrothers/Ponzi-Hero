@@ -40,7 +40,6 @@ export default function Page() {
       setTokens(tokenAccounts.value)
 
       const userItems = await fetchUserItems();
-      console.log("userItems", userItems);
       setNfts(userItems);
     }
 
@@ -104,7 +103,6 @@ export default function Page() {
     }
 
     const loadedEquippedItems = loadEquippedItems();
-    console.log("loadedEquippedItems = ", loadedEquippedItems)
     setEquippedItems(loadedEquippedItems);
   }, [nfts]);
 

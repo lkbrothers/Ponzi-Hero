@@ -14,6 +14,8 @@ import mainTitle from '../../assets/mainTitle.png'
 import { useButtonStore } from '../../store/buttonStore'
 import { useUserStore } from '../../store/userStore'
 import { useQuery } from '@tanstack/react-query'
+import { useAccountStore } from '../../store/accountStore'
+
 export function UiLayout({ children, links }: { children: ReactNode; links: { label: string; path: string }[] }) {
   const pathname = usePathname()
 
@@ -26,7 +28,7 @@ export function UiLayout({ children, links }: { children: ReactNode; links: { la
       ">
         {scoreBoard()}
         <div className="flex justify-center items-center">
-          <img src={mainTitle.src} alt="mainTitle" className="h-24 object-fit mx-auto" />
+          <img src={mainTitle.src} alt="mainTitle" className="h-12 object-fit mx-auto" />
         </div>
         <div className="flex-none space-x-2 w-1/4 justify-end">
           <WalletButton />
@@ -158,14 +160,11 @@ export function useTransactionToast() {
 }
 
 const scoreBoard = () => {
-  const { data: credit } = useQuery({
-    queryKey: ['credit'],
-    queryFn: () => useUserStore.getState().credit
-  });
+  const { credit } = useUserStore()
     
   return (
     <div className="w-1/4">
-    <div className="flex-none w-full bg-black text-white ">
+    <div className="flex-none w-full bg-black text-white border-4 border-white">
       <div className="flex flex-col w-full items-center gap-2 text-2xl py-2 px-4">
         <div className="flex flex-row w-full justify-between gap-2">
           <p>CREDIT</p>

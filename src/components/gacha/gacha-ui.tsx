@@ -101,6 +101,7 @@ export function GachaCreate() {
     const { CreditAccount, creditAccountPda, createCreditAccount, depositCredit } = useCreditProgram();
 
     const {setCredit} = useUserStore();
+    const [fetchCredit, setFetchCredit] = useState(false);
     const { data: credit } = useQuery({
       queryKey: ['credit'],
       queryFn: () => useUserStore.getState().credit
@@ -108,7 +109,7 @@ export function GachaCreate() {
     const {
       remitForRandomMutation,
       fetchCodeAccount
-  } = useGameProgramDBAccount({ userPublicKey: publicKey!, dbAccount: DbAccounts.data?.[0]?.publicKey });
+  } = useGameProgramDBAccount({ userPublicKey: publicKey! });
 
     const queryClient = useQueryClient();
 
@@ -119,6 +120,7 @@ export function GachaCreate() {
     const handleRemit = async () => {
       try {
           // 1. remitForRandom 실행 → dummyTx 획득
+          console.log("handleRemit = ", dbAccount)
           const dummyTxHash = await remitForRandomMutation.mutateAsync();
           toast.success(`송금 성공: ${dummyTxHash}`);
           setDummyTx(dummyTxHash);
@@ -130,15 +132,17 @@ export function GachaCreate() {
       }
   };
 
+  const fetchCreditBalance = async () => {
+    if (!CreditAccount) return;
+    const balance = await CreditAccount.balance.toString();
+    console.log("balance = ", balance)
+    setCredit(balance);
+  };
+
   useEffect(() => {
-    const fetchCreditBalance = async () => {
-        if (!CreditAccount) return;
-        const balance = await CreditAccount.balance.toString();
-        console.log("balance = ", balance)
-        setCredit(balance);
-      };
+
   
-      const creditBalance = fetchCreditBalance();
+      const creditBalance =  fetchCreditBalance();
       console.log("creditBalance = ", creditBalance)
       //setCredit(creditBalance)
   }, [])
@@ -148,14 +152,23 @@ export function GachaCreate() {
   }, [codeAccount])
 
   useEffect(() => {
-    const fetchCreditBalance = async () => {
-      if (!CreditAccount) return;
-      const balance = await CreditAccount.balance.toString();
-      setCredit(balance);
-    };
-
     fetchCreditBalance();
   }, [CreditAccount]);
+
+      // 크레딧 잔액 가져오기 - 실제 체인 데이터 사용
+      const getCreditBalance = async () => {
+        if (!publicKey || !creditAccountPda) {
+            toast.error('지갑 연결 및 크레딧 계정이 필요합니다.');
+            return;
+        }
+
+        try {
+            await depositCredit.mutateAsync({ amount: 0 });
+            await fetchCreditBalance();
+        } catch (error) {
+ 
+        }
+    };
 
     const handleGachaClick = async () => {
         if(!connected) {
@@ -193,7 +206,6 @@ export function GachaCreate() {
                 })
 
 
-                console.log("result = ", result)
                 // 민팅된 아이템 정보로 결과 설정
                 const mintedItem = result.mintedItemAccount
                 let gradeIndex = 0
@@ -228,11 +240,10 @@ export function GachaCreate() {
                 setGachaResult(nftResult)
                 setShowModal(true)
 
-                const getCreditBalance = () => {
-                    if (!CreditAccount) return "로딩 중...";
-                    return CreditAccount.balance.toString();
-                };
-                setCredit(getCreditBalance())
+                // 크레딧 잔액 업데이트 - 즉시 실행
+                setFetchCredit(true)
+    // getCreditBalance();
+                
                 // 색종이 효과 추가
                 confetti({
                     particleCount: 100,
@@ -245,6 +256,14 @@ export function GachaCreate() {
             }
         }
     }
+
+    useEffect(() => {
+        if (fetchCredit) {
+            console.log("fetchCredit = ", fetchCredit)
+            fetchCreditBalance();
+            setFetchCredit(false)
+        }
+    }, [fetchCredit]);
 
     const handleRetry = () => {
         handleGachaClick()
@@ -268,7 +287,6 @@ export function GachaCreate() {
                     connected={connected}
                     showModal={showModal}
                     gachaResult={gachaResult}
-                    dbAccount={dbAccount}
                     creditAccount={creditAccount}
                     onClose={handleClose}
                     onRetry={handleRetry}
@@ -397,7 +415,7 @@ const LeftMenu = ({ isGacha, isInventory, isRanking, setIsGacha, setIsInventory,
     )
 }
 
-const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: parentHandleRemit, handleGachaClick, connected, showModal, gachaResult, onClose, onRetry, dbAccount, creditAccount, setDbAccount, setCreditAccount, setCodeAccount, setDummyTx }: {
+const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: parentHandleRemit, handleGachaClick, connected, showModal, gachaResult, onClose, onRetry, creditAccount, setDbAccount, setCreditAccount, setCodeAccount, setDummyTx }: {
     credit: number | undefined,
     isGacha: boolean,
     isInventory: boolean,
@@ -409,7 +427,6 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
     gachaResult?: any,
     onClose?: () => void,
     onRetry?: () => void,
-    dbAccount: any,
     creditAccount: any,
     setDbAccount: (account: any) => void,
     setCreditAccount: (account: any) => void,
@@ -424,6 +441,9 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
         CreditAccount,
         depositCredit
     } = useCreditProgram()
+
+    const {dbAccount} = useAccountStore();
+
     const [isClicked, setIsClicked] = useState(false)
     const { publicKey } = useWallet()
 
@@ -570,6 +590,15 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
         }
     };
 
+
+    const {setCredit} = useUserStore();
+    const fetchCreditBalance = async () => {
+        if (!CreditAccount) return;
+        const balance = await CreditAccount.balance.toString();
+        console.log("balance = ", balance)
+        setCredit(balance);
+      };
+
     // 크레딧 충전 함수
     const handleCreditDeposit = async (amount: number = 1000) => {
         if (!publicKey || !creditAccountPda) {
@@ -580,17 +609,16 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
         try {
             await depositCredit.mutateAsync({ amount });
             toast.success(`${amount} 크레딧이 충전되었습니다!`);
+            
+            // 크레딧 충전 후 즉시 잔액 업데이트
+            await fetchCreditBalance();
         } catch (error) {
             console.error('크레딧 충전 오류:', error);
             toast.error('크레딧 충전에 실패했습니다.');
         }
     };
 
-    // 크레딧 잔액 가져오기 - 실제 체인 데이터 사용
-    const getCreditBalance = () => {
-        if (!CreditAccount) return "로딩 중...";
-        return CreditAccount.balance.toString();
-    };
+
 
     // useEffect(() => {
     //     // 컴포넌트 마운트 시 또는 데이터 변경 시 한 번만 실행
@@ -670,7 +698,7 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
                         <div className="flex flex-col items-center justify-center h-full">
                             <h2 className="text-2xl font-bold mb-4 text-center">계정 생성이 필요합니다</h2>
                             <div className="flex gap-4">
-                                {1 && (
+                                {!dbAccount && (
                                     <button
                                         className="btn btn-primary"
                                         onClick={handleDbAccountCreate}
@@ -710,23 +738,23 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
                             <div className="text-[64px] color-changing-text mb-8">
                                 PRESS BUTTON
                             </div>
+                            <button
+                                className="btn btn-sm btn-outline btn-accent mt-2"
+                                onClick={() => handleCreditDeposit(1000)}
+                            >
+                                1000 크레딧 충전
+                            </button>
 
                             {/* 크레딧 정보 표시 - dbAccount와 creditAccount 모두 있을 때만 표시 */}
-                            {dbAccount && creditAccount && (
+                            {/* {dbAccount && creditAccount && (
                                 <div className="bg-base-200 p-4 rounded-lg shadow-md mb-4">
                                     <h3 className="text-xl font-bold mb-2">크레딧 정보</h3>
                                     <p className="text-lg">현재 잔액: <span className="font-bold text-primary">{credit}</span> 크레딧</p>
-                                    <button
-                                        className="btn btn-sm btn-outline btn-accent mt-2"
-                                        onClick={() => handleCreditDeposit(1000)}
-                                    >
-                                        1000 크레딧 충전
-                                    </button>
                                     <button className="btn btn-secondary" onClick={handleGachaClick}>
                                         송금
                                     </button>
                                 </div>
-                            )}
+                            )} */}
                         </div>
                     )}
                 </>

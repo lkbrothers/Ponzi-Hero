@@ -79,32 +79,32 @@ export function Inventory({ tokens, nfts,setNfts, equippedItems, setEquippedItem
         return index < currentNfts.length ? currentNfts[index] : null;
     });
 
-    // NFT 메타데이터에서 이미지 URL 가져오기
-    useEffect(() => {
-        const fetchNftMetadata = async () => {
-            const imageUrls: {[key: string]: string} = {};
+    // // NFT 메타데이터에서 이미지 URL 가져오기
+    // useEffect(() => {
+    //     const fetchNftMetadata = async () => {
+    //         const imageUrls: {[key: string]: string} = {};
             
-            for (const nft of nfts) {
-                if (nft.account.uri) {
-                    try {
-                        const metadataUrl = getImageUrl(nft.account.uri);
-                        const response = await fetch(metadataUrl);
-                        const metadata = await response.json();
+    //         for (const nft of nfts) {
+    //             if (nft.account.uri) {
+    //                 try {
+    //                     const metadataUrl = getImageUrl(nft.account.uri);
+    //                     const response = await fetch(metadataUrl);
+    //                     const metadata = await response.json();
                         
-                        if (metadata.image) {
-                            imageUrls[nft.account.mint || nft.account.id] = getImageUrl(metadata.image);
-                        }
-                    } catch (error) {
-                        console.error('메타데이터 가져오기 실패:', error);
-                    }
-                }
-            }
+    //                     if (metadata.image) {
+    //                         imageUrls[nft.account.mint || nft.account.id] = getImageUrl(metadata.image);
+    //                     }
+    //                 } catch (error) {
+    //                     console.error('메타데이터 가져오기 실패:', error);
+    //                 }
+    //             }
+    //         }
             
-            setNftImages(imageUrls);
-        };
+    //         setNftImages(imageUrls);
+    //     };
         
-        fetchNftMetadata();
-    }, [nfts]);
+    //     fetchNftMetadata();
+    // }, [nfts]);
 
 
 

@@ -9,9 +9,6 @@ export interface EquippedItem {
 
 export function Equipments({ equippedItems }: { equippedItems: EquippedItem }) {
 
-    useEffect(() => {
-        console.log("equippedItems = ", equippedItems)
-    }, [equippedItems])
 
     return (
         <div className="flex flex-col items-center justify-center gap-2 w-1/2 h-full">
