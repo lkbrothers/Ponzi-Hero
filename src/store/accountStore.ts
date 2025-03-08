@@ -35,8 +35,11 @@ export const useAccountStore = create<AccountState>()(
     selectedCreditAccount: null,
     
     // DbAccount 관련 액션
-    setDbAccount: (account) => set({ dbAccount: account }),
-    selectDbAccount: (account) => set({ selectedDbAccount: account }),
+    setDbAccount: (account: PublicKey) => {
+        console.log("useAccountStore dbaccount: ", account.toString());
+        set({ dbAccount: account });
+    },
+    selectDbAccount: (account: PublicKey | null) => set({ selectedDbAccount: account }),
     
     // CreditAccount 관련 액션
     setCreditAccount: (account) => set({ creditAccount: account }),

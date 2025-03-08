@@ -522,12 +522,12 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
         setCheckDbAccount(true)
     };
 
-    useEffect(() => {
-        console.log("useEffectdbAccount = ", DbAccounts.data)
-        if(DbAccounts.data?.[0]?.publicKey.toString()){
-            setDbAccount(DbAccounts.data?.[0]?.publicKey)
-        }
-    }, [DbAccounts.data?.[0]?.publicKey])
+    // useEffect(() => {
+    //     console.log("useEffectdbAccount = ", DbAccounts.data)
+    //     if(DbAccounts.data?.[0]?.publicKey.toString()){
+    //         setDbAccount(DbAccounts.data?.[0]?.publicKey)
+    //     }
+    // }, [DbAccounts.data?.[0]?.publicKey])
 
     // 크레딧 계정 생성 함수
     const handleCreditAccountCreate = async () => {
