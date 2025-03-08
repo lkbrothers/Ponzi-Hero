@@ -254,10 +254,10 @@ pub mod item {
 
         ctx.accounts.code_account.reload()?;
         // 반환된 struct의 data 필드에서 seed1, seed2 추출
-        // let seed1 = ctx.accounts.code_account.seed1;
-        // let seed2 = ctx.accounts.code_account.seed2;
-        let seed1 = generate_seed(&ctx)?;
-        let seed2 = generate_seed(&ctx)?;
+        let seed1 = ctx.accounts.code_account.seed1;
+        let seed2 = ctx.accounts.code_account.seed2;
+        // let seed1 = generate_seed(&ctx)?;
+        // let seed2 = generate_seed(&ctx)?;
 
 
         msg!("COMBINED SEED 1 FOR CHOOSING GACHA: {}", seed1);

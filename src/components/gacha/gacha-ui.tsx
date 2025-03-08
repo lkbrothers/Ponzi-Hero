@@ -2,7 +2,7 @@
 
 import { Keypair, Cluster, PublicKey } from '@solana/web3.js'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 import { useCluster } from '../cluster/cluster-data-access'
@@ -26,6 +26,7 @@ import { useCreditProgram } from './gacha-data-access'
 import { useGachaWithCredit } from './gacha-data-access'
 import { getImageUrl } from '../inventory/items/item-ui'
 import { useUserStore } from '@/store/userStore'
+import {getGameProgramId} from '../../../anchor/src/game-exports'
 
 export function GachaExplain() {
     return (
@@ -96,8 +97,8 @@ export function GachaCreate() {
 
     const { dbAccount, creditAccount, selectedDbAccount, selectedCreditAccount, setDbAccount, setCreditAccount, selectDbAccount, selectCreditAccount } = useAccountStore()
 
-    const { fetchBlockInfo } = useGameProgram();
-    const { CreditAccount } = useCreditProgram();
+    const { fetchBlockInfo,DbAccounts } = useGameProgram();
+    const { CreditAccount, creditAccountPda, createCreditAccount, depositCredit } = useCreditProgram();
 
     const {setCredit} = useUserStore();
     const { data: credit } = useQuery({
@@ -107,7 +108,9 @@ export function GachaCreate() {
     const {
       remitForRandomMutation,
       fetchCodeAccount
-  } = useGameProgramDBAccount({ userPublicKey: publicKey!, dbAccount });
+  } = useGameProgramDBAccount({ userPublicKey: publicKey!, dbAccount: DbAccounts.data?.[0]?.publicKey });
+
+    const queryClient = useQueryClient();
 
     // 가챠 비용 설정
     const gachaCosts = [500, 1000, 1500, 2000, 2500, 3000]
@@ -424,6 +427,8 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
     const [isClicked, setIsClicked] = useState(false)
     const { publicKey } = useWallet()
 
+    const queryClient = useQueryClient();
+
     // DB 계정 생성 함수
     const handleDbAccountCreate = async () => {
         if (!publicKey) {
@@ -431,17 +436,102 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
             return
         }
 
-        try {
-            await userInitialize.mutateAsync(publicKey);
-            toast.success('DB 계정이 생성되었습니다!');
+        console.log("Public Key = ", publicKey.toString())
+        console.log("DB 계정 생성 시작...")
 
-            // 계정 생성 후 데이터 다시 불러오기
+        try {
+            // 캐시 무효화
+            await queryClient.invalidateQueries({ queryKey: ['game', 'dbAccountAll'] });
+            console.log("쿼리 캐시 무효화 완료")
+            
+            // 기존 DB 계정 확인
             await DbAccounts.refetch();
+            console.log("DbAccounts = ", DbAccounts.data)
+            
+            // 사용자 계정에 따른 PDA 생성
+            const [expectedPda, _] = PublicKey.findProgramAddressSync(
+                [Buffer.from("dbseedhere"), publicKey.toBuffer()],
+                getGameProgramId("devnet") || new PublicKey("")
+            );
+            
+            // 기존 계정 중에 일치하는 PDA가 있는지 확인
+            console.log("기존 계정 확인 중...");
+            console.log("expectedPda:", expectedPda.toString());
+            console.log("DbAccounts.data:", DbAccounts.data?.map(acc => acc.publicKey.toString()));
+            
+            const existingAccount = DbAccounts.data?.find(acc => 
+                acc.publicKey.toString() === expectedPda.toString()
+            );
+            
+            console.log("existingAccount 검색 결과:", existingAccount ? "찾음" : "없음");
+            
+            if (existingAccount) {
+                console.log("일치하는 DB 계정이 존재합니다:", existingAccount.publicKey.toString());
+                setDbAccount(existingAccount.publicKey);
+                toast.success('기존 DB 계정을 불러왔습니다!');
+                return;
+            }
+            
+            // DB 계정이 없는 경우 새로 생성
+            console.log("userInitialize 호출 전...");
+            await userInitialize.mutateAsync(publicKey);
+            console.log("userInitialize 호출 성공!");
+            toast.success('DB 계정이 생성되었습니다!');
+            
+            // 계정 생성 후 데이터 다시 불러오기
+            console.log("DB 계정 데이터 다시 불러오기...");
+            await DbAccounts.refetch();
+            
+            // 새로 생성된 계정 찾기
+            const newAccount = DbAccounts.data?.find(acc => 
+                acc.publicKey.toString() === expectedPda.toString()
+            );
+            
+            if (newAccount) {
+                console.log("새로 생성된 DB 계정:", newAccount.publicKey.toString());
+                setDbAccount(newAccount.publicKey);
+                console.log("DB 계정 설정 완료");
+            } else {
+                console.error("생성된 계정을 찾을 수 없습니다");
+                toast.error("생성된 계정을 찾을 수 없습니다");
+            }
         } catch (error) {
             console.error('DB 계정 생성 오류:', error);
-            toast.error('DB 계정 생성에 실패했습니다.');
+            
+            // 오류가 발생했지만 이미 계정이 존재하는 경우 처리
+            if (error instanceof Error && error.message.includes("already in use")) {
+                console.log("이미 계정이 존재합니다. 기존 계정을 불러옵니다.");
+                toast.info('이미 계정이 존재합니다. 기존 계정을 불러옵니다.');
+                
+                // 기존 계정 다시 불러오기
+                await DbAccounts.refetch();
+                
+                // 사용자 계정에 따른 PDA 찾기
+                const [expectedPda, _] = PublicKey.findProgramAddressSync(
+                    [Buffer.from("dbseedhere"), publicKey.toBuffer()],
+                    getProgramAccount.data?.value?.owner || new PublicKey("")
+                );
+                
+                const existingAccount = DbAccounts.data?.find(acc => 
+                    acc.publicKey.toString() === expectedPda.toString()
+                );
+                
+                if (existingAccount) {
+                    setDbAccount(existingAccount.publicKey);
+                    toast.success('기존 DB 계정을 불러왔습니다!');
+                }
+            } else {
+                toast.error('DB 계정 생성에 실패했습니다.');
+            }
         }
     };
+
+    useEffect(() => {
+        console.log("useEffectdbAccount = ", DbAccounts.data)
+        if(DbAccounts.data?.[0]?.publicKey.toString()){
+            setDbAccount(DbAccounts.data?.[0]?.publicKey)
+        }
+    }, [DbAccounts.data?.[0]?.publicKey])
 
     // 크레딧 계정 생성 함수
     const handleCreditAccountCreate = async () => {
@@ -450,12 +540,30 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
             return
         }
 
+        console.log("크레딧 계정 생성 시작...")
+        console.log("현재 CreditAccount 상태:", CreditAccount ? "존재함" : "없음")
+
+        if (CreditAccount) {
+            console.log("이미 크레딧 계정 존재:", creditAccountPda?.toString())
+            toast.error('이미 크레딧 계정이 생성되었습니다.')
+            setCreditAccount(creditAccountPda)
+            return;
+        }
+
         try {
             // 초기 크레딧 5000으로 계정 생성
+            console.log("createCreditAccount 호출 전...")
             await createCreditAccount.mutateAsync({ initialBalance: 5000 });
+            console.log("createCreditAccount 호출 성공!")
             toast.success('크레딧 계정이 생성되었습니다! 초기 크레딧: 5000');
 
-            // 생성된 계정 정보 갱신을 위해 데이터 다시 불러오기
+            // 생성된 계정 정보 갱신
+            if (creditAccountPda) {
+                console.log("생성된 크레딧 계정 PDA:", creditAccountPda.toString())
+                setCreditAccount(creditAccountPda);
+            } else {
+                console.log("크레딧 계정 PDA가 없습니다.");
+            }
         } catch (error) {
             console.error('크레딧 계정 생성 오류:', error);
             toast.error('크레딧 계정 생성에 실패했습니다.');
@@ -484,27 +592,37 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
         return CreditAccount.balance.toString();
     };
 
-    useEffect(() => {
-        // 컴포넌트 마운트 시 또는 데이터 변경 시 한 번만 실행
-        const syncAccounts = async () => {
-            // DbAccount 설정
-            if (DbAccounts.data && DbAccounts.data.length > 0) {
-                const newDbAccount = DbAccounts.data[0].publicKey;
-                if (!dbAccount || !dbAccount.equals(newDbAccount)) {
-                    console.log("dbAccount 설정: ", newDbAccount.toString());
-                    setDbAccount(newDbAccount);
-                }
-            }
+    // useEffect(() => {
+    //     // 컴포넌트 마운트 시 또는 데이터 변경 시 한 번만 실행
+    //     const syncAccounts = async () => {
+    //         // 지갑이 연결되어 있을 때만 계정 설정
+    //         if (!connected || !publicKey) {
+    //             // 지갑 연결이 해제되면 계정 정보 초기화
+    //             setDbAccount(null);
+    //             setCreditAccount(null);
+    //             return;
+    //         }
+            
+    //         // DbAccount 설정
+    //         if (DbAccounts.data && DbAccounts.data.length > 0) {
+    //             const newDbAccount = DbAccounts.data[0].publicKey;
+    //             if (!dbAccount || !dbAccount.equals(newDbAccount)) {
+    //                 console.log("dbAccount 설정: ", newDbAccount.toString());
+    //                 setDbAccount(newDbAccount);
+    //             }
+    //         }
 
-            // 크레딧 계정 정보 설정
-            if (creditAccountPda && CreditAccount) {
-                console.log("creditAccount 설정: ", creditAccountPda.toString());
-                setCreditAccount(creditAccountPda);
-            }
-        };
+    //         // 크레딧 계정 정보 설정
+    //         if (creditAccountPda && CreditAccount) {
+    //             if (!creditAccount || !creditAccount.equals(creditAccountPda)) {
+    //                 console.log("creditAccount 설정: ", creditAccountPda.toString());
+    //                 setCreditAccount(creditAccountPda);
+    //             }
+    //         }
+    //     };
 
-        syncAccounts();
-    }, [DbAccounts.data, dbAccount, CreditAccount, setDbAccount, setCreditAccount]);
+    //     syncAccounts();
+    // }, [DbAccounts.data, CreditAccount, creditAccountPda, setDbAccount, setCreditAccount, connected, publicKey]);
 
 
 
@@ -552,7 +670,7 @@ const MainContent = ({ credit, isGacha, isInventory, isRanking, handleRemit: par
                         <div className="flex flex-col items-center justify-center h-full">
                             <h2 className="text-2xl font-bold mb-4 text-center">계정 생성이 필요합니다</h2>
                             <div className="flex gap-4">
-                                {!dbAccount && (
+                                {1 && (
                                     <button
                                         className="btn btn-primary"
                                         onClick={handleDbAccountCreate}

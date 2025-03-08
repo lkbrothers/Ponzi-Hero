@@ -127,17 +127,21 @@ export function SelectedNftInteraction({
 
     const handleUnequip = async () => {
         const type = selectedClickNft.account.part;
+        console.log("장착 해제 시작 - 아이템 타입:", type);
+        console.log("현재 장착된 아이템 상태:", equippedItems);
         
         let newEquippedItems = { ...equippedItems };
         
         // arms 타입일 경우 L-Hand와 R-Hand에서 제거
         if (type === 'arms') {
+            console.log("arms 타입 아이템 장착 해제 - L-Hand와 R-Hand 모두 제거");
             newEquippedItems = {
                 ...newEquippedItems,
                 'L-Hand': null,
                 'R-Hand': null
             };
         } else {
+            console.log(`${type} 타입 아이템 장착 해제`);
             // 일반적인 경우: 해당 부위의 장착 아이템만 제거
             newEquippedItems = {
                 ...newEquippedItems,
@@ -145,24 +149,32 @@ export function SelectedNftInteraction({
             };
         }
         
+        console.log("장착 해제 후 예상 상태:", newEquippedItems);
+        console.log("장착 해제할 아이템 PublicKey:", selectedClickNft.publicKey);
+        
         try {
+            console.log("장착 해제 트랜잭션 시작");
             // 트랜잭션 실행
-            await updateEquipItem(true, false, selectedClickNft.publicKey, null);
+            await updateEquipItem(false, false, selectedClickNft.publicKey, null);
             
+            console.log("트랜잭션 성공 - NFT 상태 업데이트");
             // 트랜잭션 성공 후 상태 업데이트
             let updatedNfts = nfts.map((nft) => {
                 if (nft.publicKey === selectedClickNft.publicKey) {
+                    console.log("아이템 장착 상태 변경:", nft.account.name);
                     return { ...nft, account: { ...nft.account, equipped: false } };
                 }
                 return nft;
             });
             
+            console.log("상태 업데이트 완료");
             // 상태 업데이트
             setNfts([...updatedNfts]);  // 새 배열을 생성하여 참조 변경 확실히 함
             setEquippedItems(newEquippedItems);
             setShowClickDetail(false);
         } catch (error) {
             console.error("장착 해제 중 오류 발생:", error);
+            console.error("오류 세부 정보:", JSON.stringify(error));
             // 오류 처리 로직 추가
         }
     };

@@ -21,8 +21,27 @@ export function useGameProgram() {
 
     const DbAccounts = useQuery({
         queryKey: ['game', 'dbAccountAll', { cluster }],
-        queryFn: () => program.account.dBaccount.all(),
+        queryFn: async () => {
+            const accounts = await program.account.dBaccount.all();
+            console.log("DB 계정 조회 결과:", accounts.map(acc => acc.publicKey.toString()));
+            return accounts;
+        },
+        staleTime: 0,
+        gcTime: 0,
+        refetchOnMount: 'always',
+        refetchOnWindowFocus: 'always',
     })
+
+    
+
+    const fetchDbAccountsManually = useCallback(async () => {
+        try {
+            return await program.account.dBaccount.all();
+        } catch (error) {
+            console.error("DB 계정 조회 실패:", error);
+            throw error;
+        }
+    }, [program]);
 
     const CodeAccounts = useQuery({
         queryKey: ['game', 'codeAccountAll', { cluster }],
@@ -67,6 +86,7 @@ export function useGameProgram() {
         program,
         programId,
         DbAccounts,
+        fetchDbAccountsManually,
         CodeAccounts,
         getProgramAccount,
         userInitialize,
@@ -79,7 +99,7 @@ export function useGameProgramDBAccount({
     dbAccount,
 }: {
     userPublicKey: PublicKey,
-    dbAccount: PublicKey,
+    dbAccount: PublicKey | undefined,
 }) {
 
     const { cluster } = useCluster()
@@ -88,7 +108,7 @@ export function useGameProgramDBAccount({
 
     const dbAccountQuery = useQuery({
         queryKey: ['game', 'fetch', { cluster, dbAccount }],
-        queryFn: () => program.account.dBaccount.fetch(dbAccount),
+        queryFn: () => program.account.dBaccount.fetch(dbAccount!),
     })
 
     const remitForRandomMutation = useMutation({
@@ -98,7 +118,7 @@ export function useGameProgramDBAccount({
                 .remitForRandom()
                 .accounts({
                     user: userPublicKey,
-                    dbAccount: dbAccount,
+                    dbAccount: dbAccount!,
                 })
                 .rpc(),
         onSuccess: (signature) => {
@@ -127,7 +147,7 @@ export function useGameProgramDBAccount({
                 .finalizeGame(dummyTxHash, blockHash, new BN(slot), new BN(blockTime))
                 .accounts({
                     user: userPublicKey,
-                    dbAccount: dbAccount,
+                    dbAccount: dbAccount!,
                     codeAccount: codeAccount,
                 })
                 .rpc()
